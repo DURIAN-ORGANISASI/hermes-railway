@@ -1,0 +1,6 @@
+# MODE DASHBOARD — masukkan 3 variabel ini ke Railway > Service > Variables.
+# DEPLOY_MODE boleh dikosongkan; nilai dashboard ditetapkan eksplisit di bawah.
+DEPLOY_MODE=dashboard
+USERNAME=admin
+PASSWORD=ganti-dengan-password-kuat-dan-unik
+SECRET=ganti-dengan-secret-acak-minimal-32-karakter

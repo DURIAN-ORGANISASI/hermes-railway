@@ -1,0 +1,23 @@
+# MODE RAILWAY VARIABLES — cukup isi SATU atau lebih API key provider.
+DEPLOY_MODE=variables
+GROQ_API_KEY=
+MISTRAL_API_KEY=
+NVIDIA_API_KEY=
+GEMINI_API_KEY=
+# Alias opsional Gemini, dipakai jika GEMINI_API_KEY kosong:
+GOOGLE_API_KEY=
+
+# Telegram (opsional)
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_ALLOWED_USERS=
+
+# Discord (opsional)
+DISCORD_BOT_TOKEN=
+DISCORD_ALLOWED_USERS=
+DISCORD_ALLOWED_CHANNELS=
+DISCORD_FREE_RESPONSE_CHANNELS=
+DISCORD_AUTO_THREAD=false
+
+# Contoh jika HANYA menggunakan NVIDIA:
+# DEPLOY_MODE=variables
+# NVIDIA_API_KEY=isi_api_key_nvidia
