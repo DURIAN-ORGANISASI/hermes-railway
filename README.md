@@ -16,7 +16,6 @@
 
 </div>
 
-
 ![Ikhtisar Hermes Agent Railway](docs/hero.id.svg)
 <p align="center"><sub>Ilustrasi orisinal untuk dokumentasi — bukan aset atau screenshot resmi Hermes Agent/Railway.</sub></p>
 
