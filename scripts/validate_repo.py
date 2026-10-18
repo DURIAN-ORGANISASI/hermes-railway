@@ -73,6 +73,14 @@ for relative in ("README.md", "README.en.md"):
         ERRORS.append(f"{relative} must use an explicit title element inside its HTML header")
     if "docs/sources.md" not in document:
         ERRORS.append(f"{relative} must link docs/SOURCES.md")
+    if "img.shields.io/github/actions/workflow/status/" in document:
+        ERRORS.append(f"{relative} must not use a public Shields.io workflow-status endpoint for this private repository")
+    if "img.shields.io/github/license/" in document:
+        ERRORS.append(f"{relative} must not use a public Shields.io license endpoint for this private repository")
+    if "img.shields.io/badge/validation-configured-" not in document:
+        ERRORS.append(f"{relative} must include the private-repository-compatible validation badge")
+    if "img.shields.io/badge/project_license-mit-" not in document or 'href="license"' not in document:
+        ERRORS.append(f"{relative} must show a static MIT badge linked to the root LICENSE file")
 
 for token in (
     "NousResearch/hermes-agent", "MIT License", "Web Dashboard",
