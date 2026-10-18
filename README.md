@@ -8,7 +8,8 @@
 
 <p><a href="README.md">🇮🇩 Bahasa Indonesia</a> · <a href="README.en.md">🇬🇧 English</a></p>
 
-<p><strong>Jalankan Hermes Agent di Railway dengan dua mode: Dashboard atau Railway Variables.</strong></p>
+<p><strong>Jalankan Hermes Agent di Railway.</strong><br>
+Tersedia dua mode: Dashboard atau Railway Variables.</p>
 
 <p><a href="#fitur">Fitur</a> · <a href="#pilih-mode">Mode deployment</a> · <a href="#deploy-ke-railway">Deploy</a> · <a href="#keamanan-dashboard">Keamanan</a> · <a href="#sumber-atribusi-dan-lisensi">Sumber &amp; lisensi</a></p>
 
