@@ -22,8 +22,8 @@ The first non-empty key becomes the startup provider; other active keys are conf
 | --- | --- |
 | Groq | `openai/gpt-oss-20b` |
 | Mistral | `ministral-3b-latest` |
-| NVIDIA | `nvidia/nemotron-3-super-120b-a12b` |
-| Gemini | `gemini-2.5-flash` |
+| NVIDIA | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
+| Gemini | `gemini-3.8-flash` |
 
 Model availability, pricing, quotas, and provider support may change. Verify them before deployment.
 

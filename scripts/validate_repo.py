@@ -60,7 +60,7 @@ for token in (
 variables = read("variables/railway-entrypoint.sh")
 for token in (
     "GROQ_API_KEY", "MISTRAL_API_KEY", "NVIDIA_API_KEY",
-    "GEMINI_API_KEY", "GOOGLE_API_KEY", "fallback_providers:", "config.yaml",
+    "GEMINI_API_KEY", "GOOGLE_API_KEY", "nvidia/nemotron-3.5-super-vl-120b-a12b", "gemini-3.8-flash", "fallback_providers:", "config.yaml",
 ):
     if token not in variables:
         ERRORS.append(f"Missing Variables-mode behavior: {token}")
@@ -69,6 +69,8 @@ for relative in ("README.md", "README.en.md"):
     document = read(relative).lower()
     if "internet" not in document or "password" not in document:
         ERRORS.append(f"{relative} must warn about public Dashboard exposure")
+    if "<h1>hermes agent railway</h1>" not in document:
+        ERRORS.append(f"{relative} must use an explicit title element inside its HTML header")
     if "docs/sources.md" not in document:
         ERRORS.append(f"{relative} must link docs/SOURCES.md")
 

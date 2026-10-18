@@ -1,7 +1,7 @@
 <div align="center">
 <img src="docs/brand.svg" alt="Hermes Agent Railway" width="92" height="92">
-# Hermes Agent Railway
-**Jalankan Hermes Agent di Railway dengan dua mode: Dashboard atau Railway Variables.**
+<h1>Hermes Agent Railway</h1>
+<p><strong>Jalankan Hermes Agent di Railway dengan dua mode: Dashboard atau Railway Variables.</strong></p>
 <p><a href="https://github.com/DURIAN-ORGANISASI/hermes-railway/actions/workflows/validate.yml"><img alt="Repository validation" src="https://img.shields.io/github/actions/workflow/status/DURIAN-ORGANISASI/hermes-railway/validate.yml?branch=main&amp;label=validation&amp;logo=githubactions&amp;logoColor=white"></a> <a href="LICENSE"><img alt="Project MIT license" src="https://img.shields.io/github/license/DURIAN-ORGANISASI/hermes-railway?label=project%20license"></a> <img alt="Railway" src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&amp;logoColor=white"> <img alt="Docker" src="https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&amp;logoColor=white"></p>
 <p><a href="README.md">🇮🇩 Bahasa Indonesia</a> · <a href="README.en.md">🇬🇧 English</a></p>
 <p><a href="#fitur">Fitur</a> · <a href="#pilih-mode">Mode deployment</a> · <a href="#deploy-ke-railway">Deploy</a> · <a href="#keamanan-dashboard">Keamanan</a> · <a href="#sumber-atribusi-dan-lisensi">Sumber &amp; lisensi</a></p>
@@ -80,10 +80,10 @@ Contoh minimal untuk NVIDIA saja:
 | ---: | --- | --- |
 | 1 | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
 | 2 | `MISTRAL_API_KEY` | `ministral-3b-latest` |
-| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3-super-120b-a12b` |
-| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-2.5-flash` |
+| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
+| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-3.8-flash` |
 
-Model ID, harga, kuota, dan ketersediaan dapat berubah di sisi provider. Fallback hanya berlaku pada jenis error yang didukung Hermes/provider; tidak semua limit atau error autentikasi dialihkan otomatis.
+Model ID default diperiksa pada 18 Oktober 2026 berdasarkan dokumentasi penyedia. Harga, kuota, dan ketersediaan bisa berubah; periksa akses model di akun provider sebelum deploy. Fallback hanya berlaku pada jenis error yang didukung Hermes/provider; tidak semua limit atau error autentikasi dialihkan otomatis.
 
 > [!NOTE]
 > Mode Variables membuat ulang `/opt/data/config.yaml` setiap startup dari API key aktif. Jadikan Railway Variables sebagai sumber konfigurasi; edit manual file yang dihasilkan dapat tertimpa.

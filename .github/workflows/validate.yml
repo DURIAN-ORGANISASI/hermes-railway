@@ -48,7 +48,7 @@ jobs:
           python-version: "3.12"
       - name: Validate repository configuration
         run: python scripts/validate_repo.py
-      - name: Check local documentation links and SVGs
+      - name: Check local links, heading anchors, and SVGs
         run: python scripts/check_docs.py
       - name: Validate Railway JSON
         run: python -m json.tool railway.json > /dev/null

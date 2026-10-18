@@ -1,7 +1,7 @@
 <div align="center">
 <img src="docs/brand.svg" alt="Hermes Agent Railway" width="92" height="92">
-# Hermes Agent Railway
-**Run Hermes Agent on Railway with two modes: Dashboard or Railway Variables.**
+<h1>Hermes Agent Railway</h1>
+<p><strong>Run Hermes Agent on Railway with two modes: Dashboard or Railway Variables.</strong></p>
 <p><a href="https://github.com/DURIAN-ORGANISASI/hermes-railway/actions/workflows/validate.yml"><img alt="Repository validation" src="https://img.shields.io/github/actions/workflow/status/DURIAN-ORGANISASI/hermes-railway/validate.yml?branch=main&amp;label=validation&amp;logo=githubactions&amp;logoColor=white"></a> <a href="LICENSE"><img alt="Project MIT license" src="https://img.shields.io/github/license/DURIAN-ORGANISASI/hermes-railway?label=project%20license"></a> <img alt="Railway" src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&amp;logoColor=white"> <img alt="Docker" src="https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&amp;logoColor=white"></p>
 <p><a href="README.md">🇮🇩 Bahasa Indonesia</a> · <a href="README.en.md">🇬🇧 English</a></p>
 <p><a href="#features">Features</a> · <a href="#choose-a-mode">Deployment modes</a> · <a href="#deploy-to-railway">Deploy</a> · <a href="#dashboard-security">Security</a> · <a href="#sources-attribution-and-licensing">Sources &amp; license</a></p>
@@ -80,10 +80,10 @@ Minimal NVIDIA-only setup:
 | ---: | --- | --- |
 | 1 | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
 | 2 | `MISTRAL_API_KEY` | `ministral-3b-latest` |
-| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3-super-120b-a12b` |
-| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-2.5-flash` |
+| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
+| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-3.8-flash` |
 
-Model IDs, pricing, quotas, and availability can change. Fallbacks only apply to failure types supported by Hermes/provider; not every quota or authentication error will be rerouted.
+Default model IDs were reviewed against provider documentation on October 18, 2026. Pricing, quotas, and availability can change; verify model access in your provider account before deploying. Fallbacks only apply to failure types supported by Hermes/provider; not every quota or authentication error will be rerouted.
 
 > [!NOTE]
 > Variables mode regenerates `/opt/data/config.yaml` at startup from active API keys. Treat Railway Variables as the source of truth rather than manually editing the generated file.

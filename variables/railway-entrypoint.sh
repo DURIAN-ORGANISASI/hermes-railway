@@ -42,7 +42,7 @@ fi
 
 # NVIDIA
 if [ -n "${NVIDIA_API_KEY:-}" ]; then
-  add_provider nvidia nvidia nvidia/nemotron-3-super-120b-a12b
+  add_provider nvidia nvidia nvidia/nemotron-3.5-super-vl-120b-a12b
 fi
 
 # Gemini: accept GEMINI_API_KEY or the common GOOGLE_API_KEY alias.
@@ -50,7 +50,7 @@ gemini_key="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
 if [ -n "$gemini_key" ]; then
   export GEMINI_API_KEY="$gemini_key"
   export GOOGLE_API_KEY="$gemini_key"
-  add_provider gemini gemini gemini-2.5-flash
+  add_provider gemini gemini gemini-3.8-flash
 fi
 
 [ -n "$primary_provider" ] || {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate repository-local Markdown links and documentation SVG files."""
+"""Validate local Markdown/HTML links, heading anchors, and documentation SVGs."""
 from __future__ import annotations
 
 import re
@@ -10,8 +10,12 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 MD_LINK = re.compile(r"!?\[[^\]]*\]\(\s*(?:<([^>]+)>|([^\s)]+))")
-HTML_LINK = re.compile(r"<(?:a|img|source|link)\b[^>]*?\b(?:href|src)=[\"']([^\"']+)[\"']", re.I)
-FENCE = re.compile(r"(?ms)^[ \t]{0,3}(`{3,}|~{3,})[^\n]*\n.*?^[ \t]{0,3}\1[ \t]*$")
+HTML_LINK = re.compile(r"<(?:a|img|source|link)\b[^>]*?\b(?:href|src)=['\"]([^'\"]+)['\"]", re.I)
+FENCE_CHAR = chr(96)
+FENCE = re.compile(
+    r"(?ms)^[ \t]{0,3}(" + re.escape(FENCE_CHAR) + r"{3,}|~{3,})[^\n]*\n.*?^[ \t]{0,3}\1[ \t]*$"
+)
+HEADING = re.compile(r"(?m)^ {0,3}#{1,6}\s+(.+?)\s*#*\s*$")
 SVG_NS = "{http://www.w3.org/2000/svg}"
 
 
@@ -23,24 +27,60 @@ def markdown_files() -> list[Path]:
     return sorted(found)
 
 
+def slugify_heading(title: str) -> str:
+    title = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", title)
+    title = title.replace(FENCE_CHAR, "")
+    title = re.sub(r"<[^>]+>", "", title)
+    title = re.sub(r"[^\w -]", "", title, flags=re.UNICODE).strip().lower()
+    return re.sub(r"\s+", "-", title)
+
+
+def heading_anchors(path: Path) -> set[str]:
+    content = FENCE.sub("", path.read_text(encoding="utf-8"))
+    seen: dict[str, int] = {}
+    anchors: set[str] = set()
+    for match in HEADING.finditer(content):
+        slug = slugify_heading(match.group(1))
+        if not slug:
+            continue
+        count = seen.get(slug, 0)
+        seen[slug] = count + 1
+        anchors.add(slug if count == 0 else f"{slug}-{count}")
+    return anchors
+
+
 def check_links() -> tuple[int, list[str]]:
     count = 0
     errors: list[str] = []
     for source in markdown_files():
-        text = FENCE.sub("", source.read_text(encoding="utf-8"))
-        links = [(m.group(1) or m.group(2), "Markdown link") for m in MD_LINK.finditer(text)]
-        links += [(m.group(1), "HTML href/src") for m in HTML_LINK.finditer(text)]
+        content = FENCE.sub("", source.read_text(encoding="utf-8"))
+        links = [(m.group(1) or m.group(2), "Markdown link") for m in MD_LINK.finditer(content)]
+        links += [(m.group(1), "HTML href/src") for m in HTML_LINK.finditer(content)]
         for target, kind in links:
-            url = urlsplit(target)
-            if url.scheme or url.netloc or target.startswith("//") or not url.path:
+            parsed = urlsplit(target)
+            if parsed.scheme or parsed.netloc or target.startswith("//"):
                 continue
-            raw = unquote(url.path)
-            path = ((ROOT / raw.lstrip("/")) if raw.startswith("/") else source.parent / raw).resolve()
+            if not parsed.path and not parsed.fragment:
+                continue
+            raw_path = unquote(parsed.path)
+            destination = (
+                (ROOT / raw_path.lstrip("/"))
+                if raw_path.startswith("/")
+                else (source.parent / raw_path if raw_path else source)
+            ).resolve()
             count += 1
-            if not path.is_relative_to(ROOT):
+            if not destination.is_relative_to(ROOT):
                 errors.append(f"{source.relative_to(ROOT)}: local path escapes repository: {target}")
-            elif not path.exists():
+                continue
+            if not destination.exists():
                 errors.append(f"{source.relative_to(ROOT)}: broken {kind}: {target}")
+                continue
+            if parsed.fragment and destination.is_file() and destination.suffix.lower() == ".md":
+                if parsed.fragment not in heading_anchors(destination):
+                    errors.append(
+                        f"{source.relative_to(ROOT)}: missing heading anchor '{parsed.fragment}' in "
+                        f"{destination.relative_to(ROOT)}"
+                    )
     return count, errors
 
 
@@ -66,7 +106,7 @@ def main() -> int:
     link_count, link_errors = check_links()
     svg_count, svg_errors = check_svgs()
     errors = link_errors + svg_errors
-    print(f"Checked {link_count} local Markdown/HTML references and parsed {svg_count} SVG files.")
+    print(f"Checked {link_count} local links/anchors and parsed {svg_count} SVG files.")
     if errors:
         print("Documentation checks failed:", file=sys.stderr)
         for error in errors:

@@ -17,9 +17,9 @@ This repository wraps the upstream Hermes Agent container for Railway deployment
 - [Docker documentation](https://docs.docker.com/) — container image and runtime concepts.
 - [Telegram Bot API](https://core.telegram.org/bots/api) / [BotFather](https://core.telegram.org/bots#botfather) — official bot API and token setup.
 - [Discord Developer Documentation](https://discord.com/developers/docs/intro) — bot tokens, permissions, intents, and API.
-- [Groq documentation](https://console.groq.com/docs), [Mistral](https://docs.mistral.ai/), [NVIDIA API Catalog](https://build.nvidia.com/), and [Google Gemini API](https://ai.google.dev/gemini-api/docs) — provider APIs and model availability.
+- [Groq supported models](https://console.groq.com/docs/models), [Mistral model selection](https://docs.mistral.ai/getting-started/models/compare), [NVIDIA Nemotron 3.5 Super VL](https://build.nvidia.com/nvidia/nemotron-3.5-super-vl-120b-a12b), and [Google Gemini models](https://ai.google.dev/gemini-api/docs/models) — official model APIs and availability.
 
-The default model IDs in `variables/railway-entrypoint.sh` are wrapper configuration choices, not guarantees of continued availability, free usage, quota, or provider support. Verify current prices and terms with each provider.
+The wrapper currently starts with `openai/gpt-oss-20b` (Groq), `ministral-3b-latest` (Mistral), `nvidia/nemotron-3.5-super-vl-120b-a12b` (NVIDIA), or `gemini-3.8-flash` (Gemini), depending on which API key is configured first. These defaults were reviewed against provider documentation on 18 October 2026. This is a point-in-time check, not a guarantee of continued availability, free usage, quota, or provider support. Verify current prices and terms with each provider.
 
 ## Project files and original artwork
 
