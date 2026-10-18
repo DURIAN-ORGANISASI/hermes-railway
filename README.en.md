@@ -1,15 +1,23 @@
 <div align="center">
-<img src="docs/brand.svg" alt="Hermes Agent Railway" width="92" height="92">
-<h1>Hermes Agent Railway</h1>
-<p><strong>Run Hermes Agent on Railway with two modes: Dashboard or Railway Variables.</strong></p>
+
+<img src="docs/brand.svg" alt="Hermes Agent Railway" width="84" height="84">
+
+# Hermes Agent Railway
+
 <p><a href="https://github.com/DURIAN-ORGANISASI/hermes-railway/actions/workflows/validate.yml"><img alt="Validation workflow configured; see Actions for live status" src="https://img.shields.io/badge/validation-configured-2088FF?logo=githubactions&amp;logoColor=white"></a> <a href="LICENSE"><img alt="Project license: MIT" src="https://img.shields.io/badge/project_license-MIT-blue.svg"></a> <img alt="Railway" src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&amp;logoColor=white"> <img alt="Docker" src="https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&amp;logoColor=white"></p>
-<p align="center"><sub>The validation badge means the workflow is configured; it does not show live pass/fail status. Open <a href="https://github.com/DURIAN-ORGANISASI/hermes-railway/actions">Actions</a> for the latest run.</sub></p>
+
 <p><a href="README.md">🇮🇩 Bahasa Indonesia</a> · <a href="README.en.md">🇬🇧 English</a></p>
+
+<p><strong>Run Hermes Agent on Railway with two modes: Dashboard or Railway Variables.</strong></p>
+
 <p><a href="#features">Features</a> · <a href="#choose-a-mode">Deployment modes</a> · <a href="#deploy-to-railway">Deploy</a> · <a href="#dashboard-security">Security</a> · <a href="#sources-attribution-and-licensing">Sources &amp; license</a></p>
+
 </div>
 
 ![Hermes Agent Railway overview](docs/hero.en.svg)
 <p align="center"><sub>Original documentation illustration — not an official Hermes Agent or Railway asset or screenshot.</sub></p>
+
+<p align="center"><sub>The validation badge means the workflow is configured; it does not show live pass/fail status. Open <a href="https://github.com/DURIAN-ORGANISASI/hermes-railway/actions">Actions</a> for the latest run.</sub></p>
 
 > [!WARNING]
 > **Dashboard on a public domain:** Dashboard mode uses basic username/password authentication. Official Hermes documentation recommends this only for a trusted network or VPN, not direct public-internet exposure. Railway public domains are internet-accessible. Configure OAuth/OIDC or a trusted access gateway before exposing the Dashboard; this repository does not configure OAuth/OIDC automatically. See [Dashboard security](#dashboard-security).
