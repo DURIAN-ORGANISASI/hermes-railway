@@ -1,0 +1,59 @@
+name: Repository validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "README*.md"
+      - "Dockerfile"
+      - "railway.json"
+      - "LICENSE"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "docs/**"
+      - "env-examples/**"
+      - "variables/**"
+      - "scripts/**"
+      - "*.sh"
+      - ".gitignore"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    paths:
+      - "README*.md"
+      - "Dockerfile"
+      - "railway.json"
+      - "LICENSE"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
+      - "docs/**"
+      - "env-examples/**"
+      - "variables/**"
+      - "scripts/**"
+      - "*.sh"
+      - ".gitignore"
+      - ".github/workflows/validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate deployment template and docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate repository configuration
+        run: python scripts/validate_repo.py
+      - name: Check local documentation links and SVGs
+        run: python scripts/check_docs.py
+      - name: Validate Railway JSON
+        run: python -m json.tool railway.json > /dev/null
+      - name: Check shell syntax
+        run: |
+          sh -n railway-entrypoint.sh
+          sh -n dashboard-entrypoint.sh
+          sh -n variables/railway-entrypoint.sh
