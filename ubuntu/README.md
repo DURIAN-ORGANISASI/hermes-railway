@@ -333,7 +333,7 @@ Terminal dapat terbuka walaupun setup Hermes belum selesai. Pesan bahwa config.y
 
 ## B5. 🔴 Setup Hermes dan Telegram
 
-Ikuti langkah berikut **di terminal browser Railway**, bukan di chat Telegram.
+Ikuti pilihan pada layar yang sedang meminta jawaban. Baca [peta pilihan wizard (provider, model, tools, dan lokasi memasukkan angka)](../docs/PANDUAN-DEPLOY-RAILWAY.md#c5a-peta-pilihan-wizard--pilih-yang-mana) jika menunya banyak.
 
 ### 1. Jalankan setup
 
@@ -343,33 +343,35 @@ hermes setup
 
 Pilih **Full setup**.
 
-- Menu navigasi: tombol panah untuk memilih, lalu Enter.
-- Prompt angka: ketik nomor di samping pilihan yang benar, lalu Enter.
-- Jangan kirim angka pilihan ke chat Telegram.
+- Jika pertanyaan muncul di terminal browser: gunakan tombol panah + Enter, atau ketik nomor yang diminta lalu Enter.
+- Jika bot mengirim tombol pilihan di Telegram: ketuk tombol tersebut.
+- Jika bot Telegram secara jelas meminta balasan angka 1/2: kirim angka itu di chat Telegram yang sama.
+- Jangan menyalin angka dari satu layar ke layar lain.
 
 ### 2. Atur provider/model
 
-Contoh jika menggunakan Gemini:
+Pilihan yang disarankan:
 
-1. Pilih **Google AI Studio (Native Gemini API)**.
-2. Tempel API key saat diminta.
-3. Base URL: tekan Enter untuk default.
-4. Pilih model yang tersedia bagi API key-mu.
-5. Reasoning effort: pilih `low` jika tersedia.
-6. Terminal backend: pilih **Keep current (local)** jika ditampilkan.
+1. **Provider:** pilih **Google AI Studio** untuk Gemini, atau **NVIDIA NIM** jika ingin NVIDIA/Nemotron dan sudah punya NVIDIA API key. Hindari **Nous Portal** tanpa subscription, dan pilih **GitHub Copilot** hanya jika akun Copilot-mu memiliki akses yang sesuai.
+2. **API key:** tempel key provider yang sama pada prompt token/key di terminal.
+3. **Base URL:** tekan Enter untuk default jika tidak memakai endpoint custom.
+4. **Model:** pilih model **Gemini Flash** yang tersedia untuk chat cepat, atau model **chat/instruct/reasoning** yang bisa diakses pada NVIDIA. Jangan pilih embedding/reranker untuk chat.
+5. **Reasoning effort:** pilih `medium` untuk tugas umum; `low` jika lebih mengutamakan kecepatan.
+6. **Terminal backend:** pilih **Keep current (local)** jika muncul.
+7. Untuk pilihan tools, memory, browser, skills, dan layanan tambahan, ikuti [peta pilihan wizard](../docs/PANDUAN-DEPLOY-RAILWAY.md#c5a-peta-pilihan-wizard--pilih-yang-mana).
 
 ### 3. Hubungkan Telegram
 
 1. Pilih **Telegram** pada daftar platform.
 2. Pilih **Manual** jika sudah memiliki bot dari BotFather.
-3. Jika label **Manual** berada di opsi 2, pilih/ketik `2` di terminal browser. Jika nomor berbeda, ikuti nomor yang tampil di layar.
+3. Pilih **Manual** pada layar tempat menu itu muncul. Jika opsi berbentuk tombol di Telegram, ketuk tombolnya; jika terminal meminta nomor, masukkan angka yang sesuai di terminal; jika bot Telegram meminta balasan angka, balas di chat Telegram yang sama.
 4. Di Telegram, buka `@BotFather`; kirim `/newbot` jika belum punya bot.
 5. Tempel token BotFather ke prompt token di terminal browser.
 6. Pada **Allowed user IDs**, masukkan ID Telegram numerik milikmu, bukan username atau token.
 7. Pilih **Yes** untuk home channel jika bot digunakan pribadi dan prompt itu muncul.
 8. Selesaikan seluruh prompt sampai setup selesai.
 
-Untuk chat pribadi, lewati tools yang tidak dibutuhkan. Jangan aktifkan Terminal & Processes, File Operations, Code Execution, atau Computer Use kecuali memang diperlukan.
+Untuk bot pribadi, aktifkan **File Operations**, **Terminal & Processes**, dan **Memory** hanya jika memang dibutuhkan; batasi pengguna ke ID Telegram milikmu. Terminal berjalan sebagai root di container, jadi jangan memberi akses ke publik. Skip MCP, voice, image generation, cloud browser, dan plugin eksternal jika belum menyiapkan key/akun untuknya.
 
 ### 4. Cek konfigurasi
 
