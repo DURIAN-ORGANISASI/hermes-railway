@@ -277,7 +277,7 @@ Urutan diagnosis yang disarankan: **(1) hermes doctor, (2) tes chat lokal, (3) h
 
 Bagian ini khusus untuk mode **Ubuntu Terminal** pada repo ini. Anda tidak perlu memasang Ubuntu atau Hermes dari awal di terminal browser: image ubuntu/Dockerfile sudah memasang Ubuntu dan Hermes saat build. Anda hanya perlu mengatur Railway, membuka terminal browser, lalu menyelesaikan wizard Hermes.
 
-Mode ini **bukan** Dashboard web Hermes dan bukan VPS Ubuntu penuh dengan systemd. Container menggunakan ttyd serta entrypoint repo untuk terminal dan auto-start Gateway.
+Mode ini **bukan** Dashboard web Hermes dan bukan VPS Ubuntu penuh dengan systemd. Container menggunakan ttyd serta entrypoint repo untuk terminal dan auto-start Gateway. Dockerfile Ubuntu juga memasang extra `messaging` ke managed Hermes environment pada waktu build, sehingga adapter Telegram/Discord tersedia setelah redeploy; jangan mengandalkan pemasangan dependensi hanya pada filesystem runtime container.
 
 ## B1. ⚙️ Buat service Railway
 
