@@ -43,7 +43,7 @@ try:
 except (json.JSONDecodeError, OSError) as exc:
     ERRORS.append(f"Invalid railway.json: {exc}")
 
-if not re.search(r"(?m)^FROM\\s+nousresearch/hermes-agent:latest\\s*$", read("Dockerfile")):
+if not re.search(r"(?m)^FROM\s+nousresearch/hermes-agent:latest\s*$", read("Dockerfile")):
     ERRORS.append("Upstream image tag changed; update source/version notes")
 if "COPY variables/generate-config.sh /usr/local/bin/hermes-railway-generate-config.sh" not in read("Dockerfile"):
     ERRORS.append("Root Dockerfile must install the Variables-mode config generator")
