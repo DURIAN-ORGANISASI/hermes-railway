@@ -92,6 +92,22 @@ for token in ("FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/instal
     if token not in ubuntu_dockerfile:
         ERRORS.append(f"Missing Ubuntu image behavior: {token}")
 
+for token in ("util-linux", "FROM ubuntu:26.04"):
+    if token not in ubuntu_dockerfile:
+        ERRORS.append(f"Ubuntu image must include Gateway lock dependency: {token}")
+
+for relative in ("README.md", "README.en.md"):
+    document = read(relative).lower()
+    if "watch paths" not in document or "railway-entrypoint.sh" not in document:
+        ERRORS.append(f"{relative} must document per-service Watch Paths")
+    if "token" not in document or "one service" not in document:
+        ERRORS.append(f"{relative} must warn against assigning one bot token to multiple services")
+
+for relative in ("ubuntu/entrypoint.sh", "ubuntu/start-hermes"):
+    content = read(relative)
+    if "flock" not in content or ".gateway.lock" not in content:
+        ERRORS.append(f"{relative} must use the shared Gateway process lock")
+
 ubuntu_readme = read("ubuntu/README.md")
 if "RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile" not in ubuntu_readme:
     ERRORS.append("Ubuntu README must document its service-specific Dockerfile path variable")
