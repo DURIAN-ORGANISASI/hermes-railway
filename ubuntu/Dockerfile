@@ -16,7 +16,7 @@ ENV TZ=Asia/Jakarta \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash ca-certificates curl coreutils procps sed git \
     python3 python3-venv python3-pip \
-    build-essential pkg-config libffi-dev libssl-dev xz-utils \
+    build-essential pkg-config libffi-dev libssl-dev xz-utils util-linux \
     && (apt-get install -y --no-install-recommends fastfetch || true) \
     && rm -rf /var/lib/apt/lists/*
 
