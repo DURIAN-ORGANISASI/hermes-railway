@@ -33,6 +33,9 @@ Repo ini menyediakan tiga mode deployment yang dapat berjalan bersamaan sebagai 
 | **Railway Variables** | Gateway Telegram/Discord tanpa Dashboard web. | Minimal satu API key provider; token chat opsional |
 | **Ubuntu Terminal** | Terminal Ubuntu 26.04 via browser, Hermes CLI, dan Gateway opsional. | `TERMINAL_USER`, `TERMINAL_PASSWORD`, `HERMES_AUTOSTART` |
 
+> [!IMPORTANT]
+> **Token bot harus dimiliki satu service saja.** Mode Dashboard dan Variables sama-sama menjalankan Gateway; Ubuntu juga dapat menjalankannya jika `HERMES_AUTOSTART=true`. Jangan salin token Telegram/Discord yang sama ke beberapa service sekaligus. Pilih satu service untuk setiap bot, atau gunakan token bot berbeda, agar beberapa Gateway tidak berebut menerima event/pembaruan.
+ 
 ## Fitur
 
 - **Tiga mode deployment:** Dashboard dan Variables dipilih melalui `DEPLOY_MODE`; Ubuntu memakai Dockerfile terpisah yang dipilih melalui `RAILWAY_DOCKERFILE_PATH` agar basis OS dan fungsi terminal tidak mengubah image Hermes upstream.
@@ -128,7 +131,7 @@ Variabel di **Railway → service Ubuntu → Variables**:
 - Pada service Ubuntu, set variable service-scoped `RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile`. Biarkan Root Directory kosong agar build context tetap di root repo, lalu set restart policy `On Failure` dengan maksimal 10 retry.
 - Pasang Volume tersendiri di `/opt/data` untuk konfigurasi, sesi, memori, dan log Hermes. Pasang Volume lain di `/data` jika ingin file yang dibuat lewat terminal tetap tersimpan.
 - Setelah login ke terminal, jalankan `hermes setup` lalu `hermes gateway setup` sesuai provider dan kanal yang digunakan. Setelah `/opt/data/config.yaml` tersedia, `HERMES_AUTOSTART=true` (default) menghidupkan Gateway secara otomatis; set ke `false` untuk menonaktifkan auto-start.
-- Untuk menjalankan Gateway secara manual, gunakan `start-hermes`. Terminal dan Gateway tetap mengikuti siklus hidup container Railway.
+- Auto-start dan perintah `start-hermes` memakai lock bersama di `/opt/data/.gateway.lock`, sehingga wrapper menolak menjalankan Gateway kedua. Jika ingin menjalankan Gateway manual, set `HERMES_AUTOSTART=false` lalu restart service sebelum menjalankan `start-hermes`. Hindari menjalankan `hermes gateway run` langsung saat auto-start aktif karena perintah langsung melewati lock wrapper.
 - Domain service ini membuka shell Ubuntu dengan hak root di dalam container. Pakai password kuat, batasi akses domain, dan jangan menyimpan rahasia di GitHub.
 
 > [!NOTE]
@@ -146,6 +149,34 @@ Untuk menjalankan ketiga mode **bersamaan**, buat tiga Railway service yang masi
 6. **Jaringan:** Variables mode umumnya tidak membutuhkan domain publik. Dashboard hanya dibuka setelah dilindungi OAuth/OIDC atau access gateway tepercaya. Ubuntu membutuhkan domain untuk browser terminal; terminal tetap berjalan sebagai root di dalam container, jadi gunakan password kuat dan unik.
 7. Deploy setiap service secara manual saat siap, lalu periksa Deploy Logs dan uji mode tersebut. Perubahan repository ini sendiri tidak melakukan deploy ke Railway.
 
+
+## Watch Paths agar deployment tidak saling memicu
+
+Watch Paths perlu diatur **pada Settings masing-masing Railway service**; daftar ini tidak bisa berbeda per service hanya melalui satu `railway.json` bersama. Biarkan Root Directory kosong. Gunakan pola berikut pada bagian Watch Paths:
+
+**Dashboard service**
+```text
+/Dockerfile
+/railway-entrypoint.sh
+/dashboard-entrypoint.sh
+/railway.json
+```
+
+**Variables service**
+```text
+/Dockerfile
+/railway-entrypoint.sh
+/variables/**
+/railway.json
+```
+
+**Ubuntu service**
+```text
+/ubuntu/**
+/railway.json
+```
+
+Pola memakai sintaks gitignore-style Railway. `railway.json` sengaja dicantumkan di ketiga service karena konfigurasi root tersebut dapat memengaruhi semuanya. Perubahan dokumentasi saja tidak perlu membangun ulang container. Jika kelak menambahkan file root yang dipakai saat build, masukkan path itu ke Watch Paths service yang relevan. Lihat [dokumentasi Watch Paths Railway](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
 
 ## Arsitektur dan struktur repo
 
