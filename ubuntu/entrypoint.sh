@@ -115,16 +115,21 @@ else
 fi
 cd /data
 
-# Railway containers do not rely on systemd. Keep the Gateway in the container
-# foreground lifecycle via this restart loop only after the user has configured it.
+# Use the same OS-level lock for auto-start and the start-hermes wrapper so
+# the supported manual command cannot start a second Gateway in this container.
+GATEWAY_LOCK_FILE="${HERMES_HOME}/.gateway.lock"
 if [[ "${HERMES_AUTOSTART:-true}" == "true" || "${HERMES_AUTOSTART:-true}" == "1" ]]; then
   if [[ -f "${HERMES_HOME}/config.yaml" ]]; then
     (
       echo "Hermes config found; starting Gateway supervisor."
       while true; do
-        echo "Starting Hermes Gateway..."
-        hermes gateway run || true
-        echo "Hermes Gateway exited; retrying in 5 seconds."
+        echo "Starting Hermes Gateway under a shared process lock..."
+        if flock -n "${GATEWAY_LOCK_FILE}" -- hermes gateway run; then
+          echo "Hermes Gateway exited normally; retrying in 5 seconds."
+        else
+          status=$?
+          echo "Hermes Gateway exited (status ${status}) or another process holds the Gateway lock; retrying in 5 seconds." >&2
+        fi
         sleep 5
       done
     ) &
