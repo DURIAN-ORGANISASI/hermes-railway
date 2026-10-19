@@ -60,6 +60,11 @@ RUN set -eux; \
     rm -f /tmp/install-hermes.sh; \
     command -v hermes
 
+# Telegram and Discord are optional Hermes extras. Install them into the
+# managed environment at image-build time so Gateway autostart has adapters.
+RUN cd /usr/local/share/hermes-agent && \
+    python3 -c "import pm; pm.sync_venv(['messaging'], explicit=True)"
+
 COPY ubuntu/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY ubuntu/system-banner.sh /etc/profile.d/00-system-banner.sh
 COPY ubuntu/start-hermes /usr/local/bin/start-hermes
