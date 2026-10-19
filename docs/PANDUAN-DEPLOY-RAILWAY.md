@@ -291,7 +291,13 @@ hermes setup
 3. Jika prompt meminta nomor, ketik nomor di samping pilihan yang sesuai, lalu Enter.
 4. Lanjutkan ke pengaturan provider/model.
 
-🔴 Nomor opsi dapat berbeda menurut versi wizard. Ikuti label dan angka yang tampil pada terminalmu.
+🔴 Nomor opsi dapat berbeda menurut versi wizard. Ikuti label dan angka yang tampil pada layar yang sedang bertanya.
+
+**Jangan tertukar tempat menjawab:**
+- Prompt yang muncul di **terminal browser Railway** dijawab di terminal itu.
+- Jika bot mengirim menu/pertanyaan di **chat Telegram** dan meminta balasan angka (misalnya `1` atau `2`), kirim angka itu sebagai balasan pada **chat Telegram yang sama**.
+- Jika Telegram menampilkan tombol pilihan, ketuk tombolnya langsung.
+- Jangan menyalin angka dari satu layar ke layar lain. Ikuti instruksi pada layar tempat pilihan muncul.
 
 ## C5A. Peta pilihan wizard — pilih yang mana?
 
@@ -419,9 +425,28 @@ Ikuti prompt versi Hermes yang tampil. Contoh alur Google AI Studio:
 9. Jika ditanya **Use your user ID as the home channel?**, pilih **Yes** untuk penggunaan pribadi.
 10. Tuntaskan seluruh prompt sampai setup selesai.
 
-📌 Pilihan **Manual / angka 2** diketik di terminal browser. Jangan mengirim angka itu sebagai pesan ke bot Telegram.
+📌 **Di mana memilih Manual?** Jika pertanyaannya muncul pada terminal browser, pilih di terminal. Jika menu dikirim sebagai tombol oleh bot di Telegram, ketuk **Manual** di Telegram; jika bot meminta angka, balas angka pada chat Telegram yang sama. Ikuti tempat pertanyaan itu muncul.
+
+Perintah `/newbot` dikirim ke akun resmi `@BotFather` di Telegram. Token BotFather kemudian ditempel ke kolom/prompt token pada layar setup yang sedang digunakan.
 
 Jika ingin mengubah platform messaging kemudian, gunakan `hermes gateway setup` dari terminal yang sama.
+
+### C7A. Jika juga ingin memakai Discord
+
+Lakukan bagian ini hanya jika memang ingin bot membalas di Discord. Jika wizard menanyakan platform, pilih **Discord**.
+
+1. Buka Discord Developer Portal: https://discord.com/developers/applications.
+2. Pilih aplikasimu atau klik **New Application**.
+3. Buka menu **Bot** dan buat bot jika belum ada.
+4. Salin **Bot Token**. Tempel token ke prompt yang sedang meminta token—jangan kirim ke chat publik.
+5. Pada daftar **Allowed user IDs**, masukkan ID numerik akun Discord milikmu. Aktifkan **Developer Mode** di Discord → User Settings → Advanced, lalu klik kanan profilmu → **Copy User ID**.
+6. Di Developer Portal → **Bot → Privileged Gateway Intents**, aktifkan **Message Content Intent**, lalu Save Changes.
+7. Undang bot ke server melalui **OAuth2 → URL Generator**. Pilih scope `bot` dan izin minimum seperti View Channels, Send Messages, dan Read Message History.
+8. Untuk pengujian pertama, kirim DM langsung ke bot. Di server, mention bot dengan `@nama-bot`; bot biasanya tidak menjawab semua pesan channel tanpa mention.
+9. Bila wizard bertanya **Allow all users?**, pilih **No**. Batasi akses ke ID milikmu.
+10. Bila ditanya channel bebas mention, lewati dulu. Atur channel khusus setelah bot berhasil membalas DM.
+
+🟡 Jangan gunakan token akun pengguna atau self-bot. Pakai token bot resmi dari Developer Portal.
 
 ## C8. Pastikan konfigurasi sudah tersimpan
 
