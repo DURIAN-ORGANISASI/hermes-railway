@@ -540,3 +540,61 @@ Periksa urutan berikut:
 
 🔴 Jangan bagikan API key, token bot, password, isi konfigurasi, atau log yang masih memuat rahasia.
 
+
+
+## C5B. Urutan jawaban siap ikuti (untuk bot pribadi)
+
+Bagian ini adalah jalur rekomendasi untuk **satu bot pribadi Telegram**. Gunakan pilihan yang setara jika teks menu sedikit berbeda. **Jangan menebak nomor opsi**: pilih labelnya atau gunakan nomor yang tampil di layar saat itu.
+
+| Urutan layar/prompt | Pilih atau ketik | Catatan |
+|---|---|---|
+| Setup type / setup mode | **Full Setup** | Jangan pilih Blank Slate. |
+| Provider | **NVIDIA NIM** jika memakai NVIDIA API key; jika tidak, pilih provider yang key-nya sudah kamu punya | Jangan pilih provider hanya karena namanya terlihat populer. |
+| Authentication method | **API key** | Hindari OAuth/browser login jika memang memakai API key. |
+| API key / token | Tempel key provider yang dipilih | Nilai rahasia; jangan masukkan ke repo atau screenshot publik. |
+| Base URL | Tekan **Enter** untuk default | Hanya isi URL khusus jika memang disediakan provider/proyekmu. |
+| Model | Pilih model **chat / instruct / reasoning** yang tersedia | Jangan pilih embedding, reranker, image-only, atau audio-only. Nama dan ketersediaan model bergantung pada akun provider. |
+| Reasoning effort | **medium** | Jika mengutamakan respons cepat, pilih **low**. Jika prompt tidak muncul, lanjutkan. |
+| Context length | **Default / Recommended** | Jangan masukkan angka yang tidak ditawarkan di menu. |
+| Web search / web tools | **Enable/Yes** hanya jika backend pencarian sudah dikonfigurasi; jika meminta API key yang belum ada, **Skip/No** | Mengaktifkan tool tanpa backend/key tidak otomatis membuat pencarian berfungsi. |
+| File tools | **Enable/Yes** jika memang ingin membaca/mengelola file; selain itu **Skip/No** | Boleh diaktifkan nanti. |
+| Terminal / shell / code execution | **Skip/No** untuk awal | Kurangi risiko perintah sistem dieksekusi oleh bot. |
+| Browser automation / computer use | **Skip/No** | Aktifkan hanya setelah backend browser disiapkan. |
+| Memory / session search | **Enable/Yes** jika tersedia | Volume `/opt/data` harus sudah terpasang. |
+| Skills | **Default** | Tidak perlu memilih semua skill. |
+| Subagents / delegation | **Skip/No** untuk awal | Mengurangi kompleksitas dan pemakaian model. |
+| MCP / external integrations | **Skip/No** jika belum ada server dan kredensial | Isi hanya jika sudah punya endpoint dan autentikasi. |
+| Image generation / voice / TTS | **Skip/No** untuk bot teks | Provider chat biasa tidak otomatis menyediakan fitur ini. |
+| Terminal backend | **Keep current / Local** | Jangan pilih Docker atau Cloud Sandbox kecuali sengaja sudah menyiapkannya. |
+| Profile | **default** jika tersedia | Jika tidak ditanya, lanjutkan. |
+| System prompt / personality | Tekan **Enter** untuk default | Tambahkan instruksi khusus nanti bila diperlukan. |
+| Optional plugins | **No/Skip** | Bisa dipasang setelah konfigurasi dasar berhasil. |
+| Messaging platform | **Telegram** | Tambahkan Discord hanya jika benar-benar ingin menggunakannya juga. |
+| Telegram setup method | **Manual** jika bot sudah dibuat melalui `@BotFather` | Pilih labelnya, bukan nomor yang diingat dari tutorial. |
+| Telegram bot token | Tempel token dari `@BotFather` | Tempel di prompt token yang sedang aktif; jangan kirim ke repo. |
+| Allowed user IDs | Masukkan **ID numerik akun Telegram milikmu** | Bukan username, nomor telepon, atau token bot. |
+| Allow all users? | **No** | Lebih aman untuk bot pribadi. |
+| Use your user ID as home channel? | **Yes** jika ingin penggunaan pribadi | Jika pertanyaan ini tidak muncul, lanjutkan. |
+| Allowed channels / free-response channels | Batasi ke channel yang memang diperlukan; untuk tes awal, jangan buka akses umum | Jika tidak tahu ID channel atau belum perlu, biarkan kosong/skip sesuai prompt. |
+| Auto-create threads | **No** untuk awal | Terutama jika ingin menghindari thread otomatis di Discord. |
+| Save / Apply / Finish | **Yes / Save / Apply / Finish** | Ini menyimpan konfigurasi wizard. |
+| Overwrite/delete/reset existing config? | **No/Cancel** kecuali sengaja ingin menimpa | Hindari kehilangan konfigurasi yang sudah berjalan. |
+
+### Di layar mana jawaban dimasukkan?
+
+- **Terminal CLI:** ketik jawaban di terminal browser Railway yang menjalankan `hermes setup`; tekan Enter setelah memilih/mengetik.
+- **Menu tombol Telegram:** tekan tombol pada pesan Telegram itu sendiri.
+- **Bot Telegram meminta angka sebagai balasan:** kirim angka tersebut di chat Telegram yang sama.
+- **Token/API key:** tempel hanya pada prompt yang secara khusus meminta token/key. Jangan menempelkannya ke kolom user ID, channel ID, atau model.
+- **Pilihan menu bernomor:** nomor bisa berubah menurut versi. Contoh: jika layar saat ini menampilkan `1. Telegram` dan `2. Discord`, pilih nomor yang cocok pada layar tersebut—bukan nomor dari screenshot versi lain.
+
+### Setelah selesai, verifikasi sebelum mengubah hal lain
+
+1. Jalankan pemeriksaan file di bagian **C8**.
+2. Buka **Railway → Deployments → Deploy Logs**.
+3. Pastikan tidak ada error API key, model, atau token platform.
+4. Jika Gateway belum mulai setelah konfigurasi tersimpan, restart service **satu kali**.
+5. Tes DM Telegram dengan `/start`, lalu kirim `Halo, balas OK.`.
+6. Jika bot tetap diam, jangan mengulang setup secara acak. Catat error pertama di Deploy Logs dan cocokkan dengan bagian **C10**.
+
+> **Batas akurasi:** nama menu dan urutan opsi dapat berbeda antarversi Hermes. Tabel ini memetakan keputusan yang disarankan berdasarkan label umum; untuk memastikan setiap opsi sama persis dengan screenshot wizard milikmu, screenshot menu tersebut perlu tersedia saat panduan diperbarui.
