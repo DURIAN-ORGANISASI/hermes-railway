@@ -13,7 +13,7 @@ ENV TZ=Asia/Jakarta \
     UV_CACHE_DIR=/tmp/uv-cache \
     HERMES_AUTOSTART=true
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get -o Acquire::Retries=5 update && apt-get install -y --no-install-recommends \
     bash ca-certificates curl coreutils procps sed git \
     python3 python3-venv python3-pip \
     build-essential pkg-config libffi-dev libssl-dev xz-utils util-linux \
@@ -28,7 +28,8 @@ RUN set -eux; \
       arm64) TTYD_ASSET="ttyd.aarch64" ;; \
       *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1 ;; \
     esac; \
-    curl -fsSL "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/${TTYD_ASSET}" -o /usr/local/bin/ttyd; \
+    curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
+      "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/${TTYD_ASSET}" -o /usr/local/bin/ttyd; \
     chmod +x /usr/local/bin/ttyd; \
     /usr/local/bin/ttyd --version
 
@@ -47,7 +48,10 @@ RUN set -eux; \
     ln -s "${HERMES_RUNTIME_DIR}/cache/uv" "${HERMES_HOME}/cache/uv"; \
     ln -s "${HERMES_RUNTIME_DIR}/cache/partials" "${HERMES_HOME}/cache/partials"; \
     ln -s "${HERMES_RUNTIME_DIR}/tools" "${HERMES_HOME}/tools"; \
-    curl -fsSL https://hermes-agent.nousresearch.com/install.sh -o /tmp/install-hermes.sh; \
+    curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
+      https://hermes-agent.nousresearch.com/install.sh -o /tmp/install-hermes.sh; \
+    test -s /tmp/install-hermes.sh; \
+    head -n 1 /tmp/install-hermes.sh | grep -Eq "^#!/(usr/bin/env bash|bin/bash|usr/bin/env sh|bin/sh)$"; \
     bash /tmp/install-hermes.sh --dir /usr/local/share/hermes-agent --hermes-home "${HERMES_HOME}" --non-interactive --skip-browser; \
     rm -f /tmp/install-hermes.sh; \
     command -v hermes
