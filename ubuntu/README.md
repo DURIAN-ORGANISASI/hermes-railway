@@ -329,61 +329,53 @@ Jika terminal tidak dapat dibuka, pastikan domain menargetkan port 8080, service
 
 Terminal dapat terbuka walaupun setup Hermes belum selesai. Pesan bahwa config.yaml belum ditemukan berarti Gateway belum siap, bukan berarti image harus dibangun ulang.
 
-## B5. Konfigurasi Hermes dari terminal browser
+## B5. Setup Hermes dan Telegram
 
-Pastikan service sudah memakai deployment terbaru dari repo ini, karena entrypoint repo memiliki Gateway supervisor yang menunggu konfigurasi tersedia. Pada Variables, pastikan HERMES_HOME=/opt/data dan HERMES_AUTOSTART=true.
+Ikuti langkah berikut **di terminal browser Railway**, bukan di chat Telegram.
 
-Jalankan di **terminal browser Railway**, bukan di chat Telegram:
+### 1. Jalankan setup
 
 ~~~bash
 hermes setup
 ~~~
 
-Pada layar **How would you like to set up Hermes?**, pilih **Full setup — configure every provider, tool & option yourself** agar tidak diarahkan ke login Nous Portal.
+Pilih **Full setup**.
 
-### Penting: di mana mengetik angka 1 atau 2?
+- Menu navigasi: tombol panah untuk memilih, lalu Enter.
+- Prompt angka: ketik nomor di samping pilihan yang benar, lalu Enter.
+- Jangan kirim angka pilihan ke chat Telegram.
 
-**Ketik atau pilih angka di terminal browser tempat pertanyaan itu muncul. Jangan kirim angka pilihan setup ke chat Telegram.** Telegram baru digunakan setelah wizard selesai untuk menguji bot.
+### 2. Atur provider/model
 
-- Jika layar menampilkan menu navigasi, gunakan tombol panah ↑/↓ untuk menyorot pilihan yang diinginkan, lalu tekan Enter.
-- Jika prompt meminta nomor secara langsung, ketik nomor di terminal browser lalu tekan Enter.
-- Angka pilihan bukan kode universal. Selalu baca label di samping angka pada layar yang sedang tampil; nomor dapat berbeda menurut versi Hermes.
+Contoh jika menggunakan Gemini:
 
-### Konfigurasi provider
+1. Pilih **Google AI Studio (Native Gemini API)**.
+2. Tempel API key saat diminta.
+3. Base URL: tekan Enter untuk default.
+4. Pilih model yang tersedia bagi API key-mu.
+5. Reasoning effort: pilih `low` jika tersedia.
+6. Terminal backend: pilih **Keep current (local)** jika ditampilkan.
 
-Untuk contoh jalur Gemini:
+### 3. Hubungkan Telegram
 
-1. Pada **Select provider**, pilih **Google AI Studio (Native Gemini API)** jika tersedia.
-2. Saat prompt **Google AI Studio API key** muncul, tempel API key di terminal browser lalu tekan Enter. Jangan kirim API key ke Telegram atau GitHub.
-3. Pada **Base URL**, tekan Enter untuk memakai default jika tidak memakai endpoint khusus.
-4. Pilih model Gemini yang benar-benar tersedia untuk API key-mu. Contoh model dapat berubah dan tidak dijamin tersedia untuk semua akun.
-5. Jika prompt **Reasoning effort** tersedia, pilih low untuk memprioritaskan respons ringan/cepat.
-6. Pada **Terminal backend**, pilih **Keep current (local)** jika ditampilkan.
+1. Pilih **Telegram** pada daftar platform.
+2. Pilih **Manual** jika sudah memiliki bot dari BotFather.
+3. Jika label **Manual** berada di opsi 2, pilih/ketik `2` di terminal browser. Jika nomor berbeda, ikuti nomor yang tampil di layar.
+4. Di Telegram, buka `@BotFather`; kirim `/newbot` jika belum punya bot.
+5. Tempel token BotFather ke prompt token di terminal browser.
+6. Pada **Allowed user IDs**, masukkan ID Telegram numerik milikmu, bukan username atau token.
+7. Pilih **Yes** untuk home channel jika bot digunakan pribadi dan prompt itu muncul.
+8. Selesaikan seluruh prompt sampai setup selesai.
 
-### Konfigurasi Telegram
+Untuk chat pribadi, lewati tools yang tidak dibutuhkan. Jangan aktifkan Terminal & Processes, File Operations, Code Execution, atau Computer Use kecuali memang diperlukan.
 
-1. Pada **Select platforms to configure** atau **Messaging Platforms**, pilih Telegram dan pastikan pilihannya aktif sebelum melanjutkan.
-2. Saat prompt **How would you like to create your Telegram bot?** muncul, pilih **Manual** jika kamu sudah memiliki bot dari BotFather. Pada contoh layar yang didokumentasikan di sini, Manual adalah opsi **2**. Pilih opsi itu **di terminal browser**, bukan dengan mengirim pesan 2 ke Telegram.
-3. Untuk menu navigasi, sorot Manual dengan tombol panah lalu tekan Enter. Jika diminta mengetik nomor, masukkan nomor yang tertera di samping label Manual lalu tekan Enter.
-4. Di tab Telegram terpisah, buka @BotFather. Jika belum punya bot, kirim /newbot dan ikuti instruksinya.
-5. Tempel token dari BotFather **ke prompt token di terminal browser**, lalu tekan Enter. Token bot adalah rahasia.
-6. Pada **Allowed user IDs**, masukkan numeric Telegram user ID milik akun yang akan memakai bot. Jangan masukkan username atau token bot.
-7. Jika ditanya **Use your user ID as the home channel?**, pilih Yes untuk penggunaan pribadi.
-8. Selesaikan prompt berikutnya sampai wizard menyatakan **Setup Complete** atau kembali ke prompt shell. Wizard dapat menampilkan daftar tool terpisah untuk CLI dan Telegram; selesaikan setiap daftar yang muncul.
-
-Untuk penggunaan chat pribadi, nonaktifkan tool berisiko yang tidak diperlukan, terutama **Terminal & Processes**, **File Operations**, **Code Execution**, dan **Computer Use**. Container menjalankan terminal sebagai root, sehingga tool tersebut dapat memiliki akses luas. Browser Automation, Image Generation, dan Search Provider boleh di-skip untuk setup chat dasar. Pada **Help improve Hermes?**, pilih **No thanks** jika tidak ingin mengirim metrik penggunaan.
-
-### Verifikasi hasil setup
-
-Setelah wizard selesai, jalankan:
+### 4. Cek konfigurasi
 
 ~~~bash
-test -f /opt/data/config.yaml \
-  && echo "Konfigurasi Hermes ditemukan" \
-  || echo "Konfigurasi belum ada — selesaikan setup dahulu"
+test -f /opt/data/config.yaml && echo "Konfigurasi ditemukan" || echo "Setup belum selesai"
 ~~~
 
-Lanjutkan hanya jika file konfigurasi ditemukan. Jika belum, jalankan kembali hermes setup dan tuntaskan semua prompt. Jangan menjalankan hermes uninstall --full; perintah itu dapat menghapus data persisten di /opt/data.
+Jika belum ditemukan, jalankan kembali `hermes setup` dan selesaikan semua prompt. Jangan gunakan `hermes uninstall --full`, karena bisa menghapus data di volume.
 
 ## B6. Jalankan dan uji Gateway
 
