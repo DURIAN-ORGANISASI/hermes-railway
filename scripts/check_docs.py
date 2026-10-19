@@ -21,7 +21,7 @@ SVG_NS = "{http://www.w3.org/2000/svg}"
 
 def markdown_files() -> list[Path]:
     found = set(ROOT.glob("*.md"))
-    for folder in (ROOT / "docs", ROOT / "variables"):
+    for folder in (ROOT / "docs", ROOT / "variables", ROOT / "ubuntu"):
         if folder.exists():
             found.update(folder.rglob("*.md"))
     return sorted(found)

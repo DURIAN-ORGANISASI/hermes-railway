@@ -2,14 +2,14 @@
 
 <img src="docs/brand.svg" alt="Hermes Agent Railway" width="84" height="84">
 
-# Hermes Agent Railway
+<h1>Hermes Agent Railway</h1>
 
 <p><a href="https://github.com/DURIAN-ORGANISASI/hermes-railway/actions/workflows/validate.yml"><img alt="Validation workflow configured; see Actions for live status" src="https://img.shields.io/badge/validation-configured-2088FF?logo=githubactions&amp;logoColor=white"></a> <a href="LICENSE"><img alt="Project license: MIT" src="https://img.shields.io/badge/project_license-MIT-blue.svg"></a> <img alt="Railway" src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&amp;logoColor=white"> <img alt="Docker" src="https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&amp;logoColor=white"></p>
 
 <p><a href="README.md">🇮🇩 Bahasa Indonesia</a> · <a href="README.en.md">🇬🇧 English</a></p>
 
 <p><strong>Run Hermes Agent on Railway.</strong><br>
-Two modes are available: Dashboard or Railway Variables.</p>
+Three modes are available: Dashboard, Railway Variables, and Ubuntu Terminal.</p>
 
 <p><a href="#features">Features</a> · <a href="#choose-a-mode">Deployment modes</a> · <a href="#deploy-to-railway">Deploy</a> · <a href="#dashboard-security">Security</a> · <a href="#sources-attribution-and-licensing">Sources &amp; license</a></p>
 
@@ -25,26 +25,31 @@ Two modes are available: Dashboard or Railway Variables.</p>
 
 ## Overview
 
-This repository wraps the upstream `nousresearch/hermes-agent` image with startup scripts for two modes. Choose one mode per Railway service.
+This repository provides three deployment modes that can run concurrently as three separate Railway services. Dashboard and Variables use the upstream Hermes image; Ubuntu uses a dedicated Ubuntu Dockerfile at `ubuntu/Dockerfile`.
 
 | Mode | Purpose | Main variables |
 | --- | --- | --- |
 | **Dashboard** | Web interface for managing Hermes. | `USERNAME`, `PASSWORD`, `SECRET` |
 | **Railway Variables** | Telegram/Discord gateway without a web Dashboard. | At least one provider API key; optional chat tokens |
+| **Ubuntu Terminal** | Browser-based Ubuntu 26.04 terminal, Hermes CLI, optional Gateway. | `TERMINAL_USER`, `TERMINAL_PASSWORD`, `HERMES_AUTOSTART` |
+
+> [!IMPORTANT]
+> **Each bot token should belong to only one service.** Dashboard and Variables both run a Gateway; Ubuntu can also run one when `HERMES_AUTOSTART=true`. Do not copy the same Telegram/Discord token to multiple services. Assign each bot to one service, or use different bot tokens, so multiple Gateways do not compete for the same updates/events.
 
 ## Features
 
-- **One wrapper, two modes:** `DEPLOY_MODE` selects the mode at startup.
-- **Persistent state:** a Railway Volume mounted at `/opt/data` stores Hermes configuration, sessions, skills, and data.
+- **Three deployment modes:** Dashboard and Variables are selected with `DEPLOY_MODE`; Ubuntu uses a separate Dockerfile selected through `RAILWAY_DOCKERFILE_PATH` so its OS base and terminal features do not alter the upstream Hermes image.
+- **Separated state:** each service has its own Railway Volume mounted at `/opt/data`; never reuse or share a volume between services.
 - **Automatic model selection:** Variables mode prioritizes Groq → Mistral → NVIDIA → Gemini and configures later active providers as fallbacks.
-- **Chat integrations:** Telegram/Discord variables with user and channel allowlists.
+- **Chat integrations:** Telegram/Discord with user and channel allowlists for the configured mode.
+- **Ubuntu Terminal:** retains `ttyd`, terminal authentication, system banner, Git/Python, and optional Gateway; terminal files can be persisted separately at `/data`.
 - **Maintained docs:** sources, license scope, security policy, examples, and static CI checks.
 
 ## Choose a mode
 
 ### 1. Dashboard
 
-This is the default when `DEPLOY_MODE` is unset. Add under **Railway → Hermes service → Variables**:
+This is the default when `DEPLOY_MODE` is unset. Add under **Railway → Dashboard service → Variables**:
 
     DEPLOY_MODE=dashboard
     USERNAME=admin
@@ -61,7 +66,7 @@ This is the default when `DEPLOY_MODE` is unset. Add under **Railway → Hermes 
 
 ### 2. Railway Variables
 
-This mode does not start the Dashboard. Set variables under **Railway → Hermes service → Variables**. At least one provider API key is required; other providers may be empty or omitted.
+This mode does not start the Dashboard. Set variables under **Railway → Variables service → Variables**. At least one provider API key is required; other providers may be empty or omitted.
 
     DEPLOY_MODE=variables
     GROQ_API_KEY=
@@ -112,14 +117,66 @@ Default model IDs were reviewed against provider documentation on October 18, 20
 
 Enable **Message Content Intent** in Discord Developer Portal only if required. Restrict users/channels and grant minimum permissions. Do not use a self-bot.
 
+### 3. Ubuntu Terminal
+
+This mode provides Ubuntu 26.04 with the `ttyd` browser terminal, system banner, Git/Python, Hermes CLI, and an optional Gateway. It is **not** the Hermes web Dashboard and does not use Variables mode's config regeneration wrapper.
+
+Set these under **Railway → Ubuntu service → Variables**:
+
+    TERMINAL_USER=durianadmin
+    TERMINAL_PASSWORD=unique-password-at-least-16-characters
+    HERMES_AUTOSTART=true
+    TZ=Asia/Jakarta
+
+- On the Ubuntu service, set the service-scoped variable `RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile`. Leave Root Directory empty so the build context stays at repository root, and set the restart policy to `On Failure` with up to 10 retries.
+- Attach a dedicated Volume at `/opt/data` for Hermes config, sessions, memory, and logs. Attach a second, separate Volume at `/data` if terminal-created files must persist.
+- After logging into the terminal, run `hermes setup` and `hermes gateway setup` for your chosen provider and chat channels. Once `/opt/data/config.yaml` exists, `HERMES_AUTOSTART=true` (the default) starts the Gateway automatically; set it to `false` to disable auto-start.
+- Auto-start and the `start-hermes` wrapper share a lock at `/opt/data/.gateway.lock`, so the wrapper refuses to start a second Gateway. For manual startup, set `HERMES_AUTOSTART=false` and restart the service before running `start-hermes`. Avoid running `hermes gateway run` directly while auto-start is enabled because that bypasses the wrapper lock.
+- The terminal domain exposes an Ubuntu shell running as root inside the container. Use a strong password, restrict access to the domain, and never commit secrets to GitHub.
+
+> [!NOTE]
+> Railway has deprecated Config-as-Code (`railway.json`/`railway.toml`) for new services and says existing files stop being read on December 1, 2026. The root file is retained for compatibility with existing services; configure build and restart policies in Railway Settings for new services. See [Railway documentation](https://docs.railway.com/config-as-code).
+
 ## Deploy to Railway
 
-1. Fork this repository or use your own copy.
-2. On [Railway](https://railway.com/), create a project and deploy through **New → GitHub Repo**. Leave Root Directory empty so Railway detects the root Dockerfile.
-3. Add a Railway Volume to the Hermes service at `/opt/data`.
-4. Choose one mode and set its variables. Never commit API keys or tokens to GitHub.
-5. Deploy and inspect Deploy Logs. In Dashboard mode, match the Railway target port to the app port.
-6. Test with an allowlisted user/channel and inspect logs if the gateway does not respond.
+To run all three modes **at the same time**, create three Railway services connected to the same repository and branch. Leave **Root Directory** empty (repository root). Do not try to run all three modes in one service.
+
+1. **Dashboard:** use the root Dockerfile and set the builder/path in Railway Settings for a new service. Set the restart policy to `On Failure` with up to 10 retries. Set `DEPLOY_MODE=dashboard`, `USERNAME`, `PASSWORD`, and `SECRET`.
+2. **Variables:** use the root Dockerfile and set the builder/path in Railway Settings for a new service. Set the restart policy to `On Failure` with up to 10 retries. Set `DEPLOY_MODE=variables`, plus only the provider API keys and Telegram/Discord tokens needed.
+3. **Ubuntu:** set `RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile` in that service's Variables. This selects the Ubuntu 26.04 image without changing the build context. Leave Root Directory empty because the Dockerfile copies `ubuntu/...` from the repository root.
+4. **Separate storage:** create a different Railway Volume for each service and mount each one at `/opt/data`. Do not share a volume between services. On Ubuntu, attach another distinct Volume at `/data` if terminal-created files should survive redeploys.
+5. **Separate secrets:** set variables at service scope, not as environment-wide shared variables. Keep Dashboard credentials on Dashboard only; provider/chat keys only on services that need them; keep `TERMINAL_USER` and `TERMINAL_PASSWORD` on Ubuntu only.
+6. **Networking:** Variables mode generally needs no public domain. Expose Dashboard only behind OAuth/OIDC or a trusted access gateway. Ubuntu needs a domain for its browser terminal; the shell runs as root inside its container, so use a strong unique password.
+7. Deploy each service manually when ready, inspect Deploy Logs, and test that service. Repository changes do not deploy anything to Railway.
+
+
+## Watch Paths to reduce unrelated redeploys
+
+Configure Watch Paths in **each Railway service's Settings**; a single shared `railway.json` cannot define a different path list for each service. Leave Root Directory empty. Use these patterns:
+
+**Dashboard service**
+```text
+/Dockerfile
+/railway-entrypoint.sh
+/dashboard-entrypoint.sh
+/railway.json
+```
+
+**Variables service**
+```text
+/Dockerfile
+/railway-entrypoint.sh
+/variables/**
+/railway.json
+```
+
+**Ubuntu service**
+```text
+/ubuntu/**
+/railway.json
+```
+
+Railway uses gitignore-style patterns. `railway.json` is intentionally included for all three services because its root configuration can affect each one. Documentation-only changes do not need to rebuild containers. If you add a root-level file used during a build, add its path to the relevant service's Watch Paths. See [Railway Watch Paths documentation](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
 
 ## Architecture and repository layout
 
@@ -131,6 +188,9 @@ Enable **Message Content Intent** in Discord Developer Portal only if required. 
 | `railway-entrypoint.sh` | Selects the startup mode. |
 | `dashboard-entrypoint.sh` | Validates credentials and starts Dashboard. |
 | `variables/railway-entrypoint.sh` | Generates provider/fallback configuration. |
+| `ubuntu/Dockerfile`, `ubuntu/entrypoint.sh` | Ubuntu Terminal image/startup, including `ttyd` and optional Gateway. |
+| `RAILWAY_DOCKERFILE_PATH` | Selects `ubuntu/Dockerfile` for the Ubuntu service only. |
+| `ubuntu/README.md` | Ubuntu service and persistent-volume instructions. |
 | `env-examples/` | Variable examples without active credentials. |
 | `docs/SOURCES.md` | Upstream references, artwork attribution, and license scope. |
 | `CONTRIBUTING.md`, `SECURITY.md` | Contribution and security guidance. |
@@ -167,6 +227,9 @@ Enable **Message Content Intent** in Discord Developer Portal only if required. 
     sh -n railway-entrypoint.sh
     sh -n dashboard-entrypoint.sh
     sh -n variables/railway-entrypoint.sh
+    bash -n ubuntu/entrypoint.sh
+    bash -n ubuntu/start-hermes
+    bash -n ubuntu/system-banner.sh
 
 CI checks configuration, local links, SVGs, JSON, and shell syntax. It does not test a live Docker image, Railway deployment, provider account, or message delivery.
 

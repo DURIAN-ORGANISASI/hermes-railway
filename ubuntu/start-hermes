@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if ! command -v hermes >/dev/null 2>&1; then
+  echo "Hermes CLI is not installed in PATH." >&2
+  exit 1
+fi
+if ! command -v flock >/dev/null 2>&1; then
+  echo "The flock utility is required to guard against duplicate Gateway processes." >&2
+  exit 1
+fi
+
+HERMES_HOME="${HERMES_HOME:-/opt/data}"
+LOCK_FILE="${HERMES_HOME}/.gateway.lock"
+mkdir -p "${HERMES_HOME}"
+
+if flock -n "${LOCK_FILE}" -- hermes gateway run; then
+  exit 0
+else
+  status=$?
+  echo "Gateway startup failed (exit status ${status}); the lock may already be held by the auto-started Gateway. To start it manually, set HERMES_AUTOSTART=false and restart the Railway service first." >&2
+  exit "${status}"
+fi
