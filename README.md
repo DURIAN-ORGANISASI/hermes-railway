@@ -161,20 +161,19 @@ PORT=8080
 - Pada service Ubuntu, set Dockerfile Path ke `ubuntu/Dockerfile` dan pastikan **Root Directory tetap kosong**, sehingga build context tetap root repository. `RAILWAY_DOCKERFILE_PATH` dicantumkan di template; pengaturan build Railway juga harus menunjuk ke path yang benar. Set restart policy `On Failure` dengan maksimal 10 retry.
 - `TERMINAL_USER` tidak boleh mengandung titik dua (`:`) dan `TERMINAL_PASSWORD` wajib minimal 16 karakter. Gunakan nilai acak unik.
 - Pasang Volume khusus service Ubuntu di `/opt/data` untuk konfigurasi, sesi/history, memori, dan log Hermes. `/data` adalah direktori file terminal; pasang Volume kedua yang berbeda di `/data` jika file buatan terminal harus bertahan sesudah redeploy. Jangan berbagi volume dengan service lain.
-- Buka domain terminal setelah deploy, login dengan kredensial tadi, lalu jalankan perintah setup berikut satu per satu:
+- Buka domain terminal setelah deployment terbaru selesai, login dengan kredensial tadi, lalu jalankan satu wizard:
 
-```bash
+~~~bash
 hermes setup
-hermes gateway setup
-```
+~~~
 
-Ikuti wizard untuk provider/model dan kanal chat. Pastikan konfigurasi dibuat:
+Pilih **Full setup**, pilih provider/model, dan konfigurasi Telegram saat diminta. Wizard utama juga menyimpan pengaturan messaging; jalankan `hermes gateway setup` hanya jika ingin mengubah messaging secara terpisah. Pastikan konfigurasi dibuat:
 
-```bash
+~~~bash
 test -f /opt/data/config.yaml && echo "Konfigurasi ditemukan" || echo "Setup belum selesai"
-```
+~~~
 
-Setelah konfigurasi tersedia, restart service dari Railway. Dengan `HERMES_AUTOSTART=true`, entrypoint mencoba menghidupkan Gateway secara otomatis. Periksa Deploy Logs lalu uji dengan mengirim pesan pada bot Telegram/Discord yang dikonfigurasi.
+Pada image terbaru repo ini, entrypoint menunggu file `/opt/data/config.yaml` jika setup belum selesai, lalu memulai Gateway otomatis setelah file tersedia. Dengan `HERMES_AUTOSTART=true`, kamu tidak perlu restart service setelah wizard selesai. Periksa Railway Deploy Logs dan tes pesan DM ke bot.
 - Untuk menjalankan Gateway manual, set `HERMES_AUTOSTART=false`, restart service, lalu gunakan `start-hermes`. Jangan menjalankan Gateway kedua saat auto-start aktif; jangan menjalankan `hermes gateway run` langsung karena itu melewati lock wrapper.
 - **Keamanan penting:** shell berjalan sebagai root di dalam container. Log Railway sebelumnya menampilkan kredensial ttyd dalam bentuk Base64 (Base64 bukan enkripsi); jika kredensial pernah tercetak pada log, segera rotasi `TERMINAL_PASSWORD`, simpan, lalu redeploy. Jangan menyimpan rahasia di GitHub.
 
