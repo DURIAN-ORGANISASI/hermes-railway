@@ -14,12 +14,14 @@ REQUIRED = [
     "README.md", "README.en.md", "SECURITY.md", "railway.json",
     "railway-entrypoint.sh", "dashboard-entrypoint.sh",
     "variables/README.md", "variables/railway-entrypoint.sh",
+    "variables/generate-config.sh",
     "env-examples/dashboard.railway.example",
     "env-examples/railway-variables.example",
     "docs/SOURCES.md", "docs/brand.svg", "docs/hero.id.svg",
     "docs/hero.en.svg", "docs/architecture.svg",
     ".github/workflows/validate.yml", "scripts/check_docs.py",
-    "scripts/validate_repo.py", "ubuntu/Dockerfile", "ubuntu/entrypoint.sh",
+    "scripts/test_deploy_modes.py", "scripts/validate_repo.py",
+    "ubuntu/Dockerfile", "ubuntu/entrypoint.sh",
     "ubuntu/start-hermes", "ubuntu/system-banner.sh", "ubuntu/README.md",
 ]
 for relative in REQUIRED:
@@ -41,8 +43,10 @@ try:
 except (json.JSONDecodeError, OSError) as exc:
     ERRORS.append(f"Invalid railway.json: {exc}")
 
-if not re.search(r"(?m)^FROM\s+nousresearch/hermes-agent:latest\s*$", read("Dockerfile")):
+if not re.search(r"(?m)^FROM\\s+nousresearch/hermes-agent:latest\\s*$", read("Dockerfile")):
     ERRORS.append("Upstream image tag changed; update source/version notes")
+if "COPY variables/generate-config.sh /usr/local/bin/hermes-railway-generate-config.sh" not in read("Dockerfile"):
+    ERRORS.append("Root Dockerfile must install the Variables-mode config generator")
 
 for token in ("dashboard", "variables", "Invalid DEPLOY_MODE"):
     if token not in read("railway-entrypoint.sh"):
@@ -58,20 +62,32 @@ for token in (
     if token not in dashboard:
         ERRORS.append(f"Missing Dashboard guard/configuration: {token}")
 
-variables = read("variables/railway-entrypoint.sh")
+variables_entrypoint = read("variables/railway-entrypoint.sh")
+variables_generator = read("variables/generate-config.sh")
 for token in (
     "GROQ_API_KEY", "MISTRAL_API_KEY", "NVIDIA_API_KEY",
-    "GEMINI_API_KEY", "GOOGLE_API_KEY", "nvidia/nemotron-3.5-super-vl-120b-a12b", "gemini-3.8-flash", "fallback_providers:", "config.yaml",
+    "GEMINI_API_KEY", "GOOGLE_API_KEY",
+    "openai/gpt-oss-20b", "ministral-3b-latest",
+    "nvidia/nemotron-3.5-super-vl-120b-a12b", "gemini-3.8-flash",
+    "fallback_providers:", "config.yaml", "No provider API key found",
 ):
-    if token not in variables:
+    if token not in variables_generator:
         ERRORS.append(f"Missing Variables-mode behavior: {token}")
+for token in ("HERMES_HOME", "GOOGLE_API_KEY", "export GEMINI_API_KEY",
+              "hermes-railway-generate-config.sh", "/init /opt/hermes/docker/main-wrapper.sh"):
+    if token not in variables_entrypoint:
+        ERRORS.append(f"Missing Variables-mode startup behavior: {token}")
+if "mktemp" not in variables_generator or "mv -f" not in variables_generator:
+    ERRORS.append("Variables-mode config must be written to a temporary file and atomically renamed")
+if "chmod 0600" not in variables_generator:
+    ERRORS.append("Variables-mode config must be restricted to owner read/write")
 
 for relative in ("README.md", "README.en.md"):
     document = read(relative).lower()
     if relative == "README.md" and "volume berbeda untuk setiap service" not in document:
         ERRORS.append("README.md must require a different volume per service")
     if relative == "README.en.md" and "different railway volume for each service" not in document:
-        ERRORS.append("README.en.md must require a different volume per service")
+        ERRORS.append("README.en.md must require a different volume for each service")
     if "internet" not in document or "password" not in document:
         ERRORS.append(f"{relative} must warn about public Dashboard exposure")
     if "<h1>hermes agent railway</h1>" not in document:
@@ -88,7 +104,12 @@ for relative in ("README.md", "README.en.md"):
         ERRORS.append(f"{relative} must show a static MIT badge linked to the root LICENSE file")
 
 ubuntu_dockerfile = read("ubuntu/Dockerfile")
-for token in ("FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/install.sh", "raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh", "HERMES_HOME=/opt/data", "--retry 8", "--retry-all-errors", "--retry-max-time 240", "Acquire::Retries=5", "test -s /tmp/install-hermes.sh"):
+for token in (
+    "FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/install.sh",
+    "raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh",
+    "HERMES_HOME=/opt/data", "--retry 8", "--retry-all-errors",
+    "--retry-max-time 240", "Acquire::Retries=5", "test -s /tmp/install-hermes.sh",
+):
     if token not in ubuntu_dockerfile:
         ERRORS.append(f"Missing Ubuntu image behavior: {token}")
 
@@ -137,8 +158,14 @@ for relative in ("env-examples/dashboard.railway.example", "env-examples/railway
     content = read(relative)
     if re.search(r"(?im)^(?:GROQ|MISTRAL|NVIDIA|GEMINI|GOOGLE)_API_KEY=.{8,}$", content):
         ERRORS.append(f"Possible live provider API key in {relative}")
-    if re.search(r"(?im)^TELEGRAM_BOT_TOKEN=\S{20,}$", content):
+    if re.search(r"(?im)^TELEGRAM_BOT_TOKEN=\\S{20,}$", content):
         ERRORS.append(f"Possible live Telegram token in {relative}")
+
+test_source = read("scripts/test_deploy_modes.py")
+for token in ("test_missing_and_whitespace_keys", "test_single_provider_configurations",
+              "test_provider_priority_and_fallback_order", "google-alias-test-secret"):
+    if token not in test_source:
+        ERRORS.append(f"Missing Variables-mode smoke test: {token}")
 
 if ERRORS:
     print("Validation FAILED:")
@@ -146,5 +173,5 @@ if ERRORS:
         print(f"- {error}")
     sys.exit(1)
 
-print("Validation OK: Dashboard, Variables, Ubuntu mode assets, per-service Dockerfile selection, storage isolation, security warning, and source attribution are present.")
-print("Static validation only; it does not test a live Railway deployment.")
+print("Validation OK: Dashboard, Variables, Ubuntu mode assets, atomic provider config, per-service Dockerfile selection, storage isolation, security warning, and source attribution are present.")
+print("Static validation only; runtime/provider access still requires real Railway secrets.")
