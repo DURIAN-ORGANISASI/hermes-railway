@@ -48,8 +48,12 @@ RUN set -eux; \
     ln -s "${HERMES_RUNTIME_DIR}/cache/uv" "${HERMES_HOME}/cache/uv"; \
     ln -s "${HERMES_RUNTIME_DIR}/cache/partials" "${HERMES_HOME}/cache/partials"; \
     ln -s "${HERMES_RUNTIME_DIR}/tools" "${HERMES_HOME}/tools"; \
-    curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
-      https://hermes-agent.nousresearch.com/install.sh -o /tmp/install-hermes.sh; \
+    if ! curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
+      https://hermes-agent.nousresearch.com/install.sh -o /tmp/install-hermes.sh; then \
+      echo "Primary Hermes installer unavailable; retrying from the official GitHub source."; \
+      curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
+        https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh -o /tmp/install-hermes.sh; \
+    fi; \
     test -s /tmp/install-hermes.sh; \
     head -n 1 /tmp/install-hermes.sh | grep -Eq "^#!/(usr/bin/env bash|bin/bash|usr/bin/env sh|bin/sh)$"; \
     bash /tmp/install-hermes.sh --dir /usr/local/share/hermes-agent --hermes-home "${HERMES_HOME}" --non-interactive --skip-browser; \
