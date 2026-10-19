@@ -368,7 +368,7 @@ Jangan menjalankan `hermes uninstall --full` untuk mengulang wizard; perintah it
 
 ## B6. Jalankan dan uji Gateway
 
-Setelah setup, entrypoint baru memeriksa `/opt/data/config.yaml` setiap lima detik. Jika `HERMES_AUTOSTART=true` dan file konfigurasi tersedia, supervisor akan memulai `hermes gateway run` secara otomatis. Karena itu, pada deployment baru yang memuat perbaikan ini, tidak perlu menjalankan Gateway secara manual atau restart service setelah wizard.
+Setelah setup selesai sepenuhnya, restart service Ubuntu sekali melalui Railway supaya Gateway membaca konfigurasi Telegram final. Entrypoint baru tetap memeriksa `/opt/data/config.yaml` setiap lima detik apabila setup awal belum selesai ketika container mulai. Jika `HERMES_AUTOSTART=true`, supervisor akan menjalankan `hermes gateway run` setelah restart. Jangan menjalankan Gateway manual bersamaan dengan auto-start.
 
 Buka Railway → service Ubuntu → **Deploy Logs**, tunggu pesan Gateway mulai, lalu kirim pesan **DM** ke bot Telegram: `/start` kemudian `Halo, balas OK`. Jangan mulai dari grup.
 
