@@ -10,9 +10,9 @@ Panduan ringkas untuk mencoba ketiga mode dari repository ini: **Dashboard**, **
 |---|---|---|---|
 | **Dashboard** | Mengelola Hermes lewat web | Ya, target port 8080 | Login Dashboard, lalu atur model/provider |
 | **Railway Variables** | Gateway bot Telegram/Discord tanpa Dashboard | Tidak | Isi API key dan token pada Variables |
-| **Ubuntu Terminal** | Terminal browser + Hermes CLI + Gateway | Ya, target port 8080 | Jalankan wizard \`hermes setup\` |
+| **Ubuntu Terminal** | Terminal browser + Hermes CLI + Gateway | Ya, target port 8080 | Jalankan wizard `hermes setup` |
 
-🔴 Jika ingin membandingkan ketiga mode, buat **tiga service terpisah**. Setiap service harus memiliki Volume sendiri di \`/opt/data\`.
+🔴 Jika ingin membandingkan ketiga mode, buat **tiga service terpisah**. Setiap service harus memiliki Volume sendiri di `/opt/data`.
 
 🟡 Jangan jalankan token Telegram/Discord yang sama di lebih dari satu Gateway sekaligus. Saat mencoba mode lain, hentikan service lama atau gunakan token bot berbeda.
 
@@ -22,17 +22,17 @@ Panduan ringkas untuk mencoba ketiga mode dari repository ini: **Dashboard**, **
 2. Buat project baru, atau buka project tempat service akan dibandingkan.
 3. Klik **New / + Create → GitHub Repo** (nama menu bisa berbeda menurut tampilan Railway).
 4. Hubungkan GitHub jika diminta.
-5. Pilih repository **\`DURIAN-ORGANISASI/hermes-railway\`**, branch **\`main\**.
+5. Pilih repository **`DURIAN-ORGANISASI/hermes-railway`**, branch **`main`**.
 6. Tunggu Railway membuat service dan menjalankan build pertama.
-7. Beri nama service agar mudah dibedakan: \`Hermes-Dashboard\`, \`Hermes-Variables\`, dan \`Hermes-Ubuntu\`.
+7. Beri nama service agar mudah dibedakan: `Hermes-Dashboard`, `Hermes-Variables`, dan `Hermes-Ubuntu`.
 
 📌 Ulangi langkah memilih GitHub Repo untuk setiap service. Ketiganya berasal dari repo yang sama, tetapi konfigurasi deploy-nya berbeda.
 
 ### Pengaturan build yang perlu diketahui
 
-- **Dashboard:** gunakan Dockerfile root, yaitu \`Dockerfile\`.
-- **Railway Variables:** gunakan Dockerfile root, yaitu \`Dockerfile\`.
-- **Ubuntu Terminal:** gunakan \`ubuntu/Dockerfile\`.
+- **Dashboard:** gunakan Dockerfile root, yaitu `Dockerfile`.
+- **Railway Variables:** gunakan Dockerfile root, yaitu `Dockerfile`.
+- **Ubuntu Terminal:** gunakan `ubuntu/Dockerfile`.
 - Untuk ketiga mode, **Root Directory harus kosong** agar Railway memakai root repository sebagai build context.
 
 Jangan memasang ketiga mode dalam satu service.
@@ -46,7 +46,7 @@ Jangan memasang ketiga mode dalam satu service.
 Buka Railway → service **Hermes-Dashboard** → **Settings → Build**:
 
 1. **Root Directory:** kosong.
-2. **Dockerfile Path:** \`Dockerfile\` (atau path root Dockerfile jika terisi otomatis).
+2. **Dockerfile Path:** `Dockerfile` (atau path root Dockerfile jika terisi otomatis).
 3. Simpan perubahan jika Railway menampilkan tombol Save.
 
 ## A2. Isi Variables
@@ -64,10 +64,10 @@ PORT=8080
 ~~~
 
 🔴 Ketentuan:
-- \`USERNAME\`: nama login Dashboard yang akan kamu gunakan.
-- \`PASSWORD\`: password login yang kuat dan unik.
-- \`SECRET\`: minimal 32 karakter; jangan gunakan nilai contoh.
-- \`PORT=8080\`: harus cocok dengan target port domain Railway.
+- `USERNAME`: nama login Dashboard yang akan kamu gunakan.
+- `PASSWORD`: password login yang kuat dan unik.
+- `SECRET`: minimal 32 karakter; jangan gunakan nilai contoh.
+- `PORT=8080`: harus cocok dengan target port domain Railway.
 
 📋 Cara membuat secret acak di terminal Linux/Ubuntu:
 
@@ -75,7 +75,7 @@ PORT=8080
 openssl rand -hex 32
 ~~~
 
-Salin hasilnya ke \`SECRET\`. Jangan taruh password atau secret asli di GitHub.
+Salin hasilnya ke `SECRET`. Jangan taruh password atau secret asli di GitHub.
 
 ## A3. Pasang Volume
 
@@ -96,7 +96,7 @@ Salin hasilnya ke \`SECRET\`. Jangan taruh password atau secret asli di GitHub.
 3. Periksa target port domain: set ke **8080**.
 4. Simpan perubahan.
 
-✅ Gunakan domain \`*.up.railway.app\` yang dibuat Railway untuk tes pertama. Setelah URL ini berfungsi, baru pasang custom domain jika diperlukan.
+✅ Gunakan domain `*.up.railway.app` yang dibuat Railway untuk tes pertama. Setelah URL ini berfungsi, baru pasang custom domain jika diperlukan.
 
 ## A5. Deploy dan login
 
@@ -104,10 +104,10 @@ Salin hasilnya ke \`SECRET\`. Jangan taruh password atau secret asli di GitHub.
 2. Jalankan deploy/redeploy jika perubahan Build, Variables, atau Volume belum diterapkan.
 3. Tunggu status deployment menjadi **SUCCESS**.
 4. Buka **Deploy Logs** dan pastikan tidak ada error startup.
-5. Klik domain Railway atau buka URL \`https://DOMAIN-KAMU.up.railway.app\`.
-6. Login menggunakan \`USERNAME\` dan \`PASSWORD\) yang kamu isi di Variables.
+5. Klik domain Railway atau buka URL `https://DOMAIN-KAMU.up.railway.app`.
+6. Login menggunakan `USERNAME` dan `PASSWORD` yang kamu isi di Variables.
 
-✅ Jika halaman login terlihat, domain dan layanan web pernah berhasil dijangkau. Setelah login, buka menu Dashboard yang dibutuhkan, misalnya **Models**. Jika ingin membuka halaman model secara langsung, coba \`/models?profile=default\` setelah domain dan login berfungsi.
+✅ Jika halaman login terlihat, domain dan layanan web pernah berhasil dijangkau. Setelah login, buka menu Dashboard yang dibutuhkan, misalnya **Models**. Jika ingin membuka halaman model secara langsung, coba `/models?profile=default` setelah domain dan login berfungsi.
 
 🟡 Jangan membuka Dashboard ke internet tanpa proteksi akses yang memadai. Username/password saja bukan pengganti OAuth/OIDC atau access gateway tepercaya.
 
@@ -116,12 +116,12 @@ Salin hasilnya ke \`SECRET\`. Jangan taruh password atau secret asli di GitHub.
 Screenshot sebelumnya menunjukkan error ini pada domain Railway. Periksa berurutan:
 
 1. Railway → **Hermes-Dashboard → Deployments → View Logs / Deploy Logs**.
-2. Jika log menyebut \`USERNAME\`, \`PASSWORD\`, atau \`SECRET\` belum diatur, isi ketiganya lalu redeploy.
-3. Jika log menyebut \`SECRET must be at least 32 characters\`, buat secret baru minimal 32 karakter.
+2. Jika log menyebut `USERNAME`, `PASSWORD`, atau `SECRET` belum diatur, isi ketiganya lalu redeploy.
+3. Jika log menyebut `SECRET must be at least 32 characters`, buat secret baru minimal 32 karakter.
 4. Buka **Settings → Build**. Pastikan Root Directory kosong dan Dockerfile root dipakai.
-5. Buka **Variables**. Pastikan \`PORT=8080\`.
-6. Buka **Settings → Networking**. Pastikan target port domain juga \`8080\).
-7. Setelah menyimpan, redeploy dan tes lagi dengan domain \`.up.railway.app\`.
+5. Buka **Variables**. Pastikan `PORT=8080`.
+6. Buka **Settings → Networking**. Pastikan target port domain juga `8080`.
+7. Setelah menyimpan, redeploy dan tes lagi dengan domain `.up.railway.app`.
 8. Jika masih gagal, cari **error pertama** pada Deploy Logs. Jangan menebak atau mengubah banyak variabel sekaligus.
 
 🟡 Error **“Application failed to respond”** tidak otomatis berarti URL domain salah. Artinya Railway belum menerima respons aplikasi yang sehat untuk request tersebut; Deploy Logs diperlukan untuk mengetahui penyebab pastinya.
@@ -137,7 +137,7 @@ Mode ini menjalankan Gateway Telegram/Discord tanpa antarmuka web. **Domain publ
 Buka **Hermes-Variables → Settings → Build**:
 
 1. **Root Directory:** kosong.
-2. **Dockerfile Path:** \`Dockerfile\` di root repo.
+2. **Dockerfile Path:** `Dockerfile` di root repo.
 3. Simpan jika ada perubahan.
 
 ## B2. Isi seluruh Variables
@@ -173,19 +173,19 @@ DISCORD_AUTO_THREAD=false
 NVIDIA_API_KEY=tempel_api_key_nvidia
 ~~~
 
-Urutan provider saat beberapa key terisi: **Groq → Mistral → NVIDIA → Gemini**. Jika \`GEMINI_API_KEY\` kosong, \`GOOGLE_API_KEY\` dapat dipakai sebagai alias.
+Urutan provider saat beberapa key terisi: **Groq → Mistral → NVIDIA → Gemini**. Jika `GEMINI_API_KEY` kosong, `GOOGLE_API_KEY` dapat dipakai sebagai alias.
 
 ### Variabel bot
 
 | Variabel | Isi |
 |---|---|
-| \`TELEGRAM_BOT_TOKEN\` | Token dari \`@BotFather\` |
-| \`TELEGRAM_ALLOWED_USERS\` | ID pengguna Telegram numerik yang diizinkan |
-| \`DISCORD_BOT_TOKEN\` | Token bot dari Discord Developer Portal |
-| \`DISCORD_ALLOWED_USERS\` | ID pengguna Discord yang diizinkan |
-| \`DISCORD_ALLOWED_CHANNELS\` | ID channel yang diizinkan |
-| \`DISCORD_FREE_RESPONSE_CHANNELS\` | ID channel yang boleh dijawab tanpa mention |
-| \`DISCORD_AUTO_THREAD\` | Biarkan \`false\) untuk menonaktifkan thread otomatis |
+| `TELEGRAM_BOT_TOKEN` | Token dari `@BotFather` |
+| `TELEGRAM_ALLOWED_USERS` | ID pengguna Telegram numerik yang diizinkan |
+| `DISCORD_BOT_TOKEN` | Token bot dari Discord Developer Portal |
+| `DISCORD_ALLOWED_USERS` | ID pengguna Discord yang diizinkan |
+| `DISCORD_ALLOWED_CHANNELS` | ID channel yang diizinkan |
+| `DISCORD_FREE_RESPONSE_CHANNELS` | ID channel yang boleh dijawab tanpa mention |
+| `DISCORD_AUTO_THREAD` | Biarkan `false` untuk menonaktifkan thread otomatis |
 
 Isi allowlist dengan ID yang benar. Jangan masukkan username ketika kolom meminta ID numerik.
 
@@ -193,7 +193,7 @@ Isi allowlist dengan ID yang benar. Jangan masukkan username ketika kolom memint
 
 1. Buka **Hermes-Variables → Volumes**.
 2. Tambahkan Volume baru.
-3. Mount path: \`/opt/data\`.
+3. Mount path: `/opt/data`.
 4. Jangan berbagi Volume ini dengan Dashboard atau Ubuntu.
 
 ## B4. Deploy dan cek Gateway
@@ -201,10 +201,10 @@ Isi allowlist dengan ID yang benar. Jangan masukkan username ketika kolom memint
 1. Buka **Deployments** → deploy/redeploy service.
 2. Tunggu proses startup selesai.
 3. Buka **Deploy Logs**.
-4. Pastikan tidak ada pesan \`No provider API key found\`, error autentikasi, atau error konfigurasi.
+4. Pastikan tidak ada pesan `No provider API key found`, error autentikasi, atau error konfigurasi.
 5. Kirim pesan uji ke bot yang tokennya kamu isi.
 
-✅ Mode Variables menyusun \`/opt/data/config.yaml\` berdasarkan API key aktif setiap startup. Ubah provider dan token dari Railway Variables, bukan dengan mengandalkan edit manual pada file yang dihasilkan.
+✅ Mode Variables menyusun `/opt/data/config.yaml` berdasarkan API key aktif setiap startup. Ubah provider dan token dari Railway Variables, bukan dengan mengandalkan edit manual pada file yang dihasilkan.
 
 🟡 Jangan buat domain publik untuk mode ini kecuali kamu mengetahui bahwa ada endpoint web yang memang perlu dibuka.
 
@@ -212,7 +212,7 @@ Isi allowlist dengan ID yang benar. Jangan masukkan username ketika kolom memint
 
 1. Periksa API key, model, dan kuota provider.
 2. Periksa token bot dan allowlist.
-3. Untuk Telegram, kirim DM dan \`/start\).
+3. Untuk Telegram, kirim DM dan `/start`.
 4. Untuk Discord, aktifkan **Message Content Intent** di Discord Developer Portal; periksa izin channel dan mention bot.
 5. Periksa Deploy Logs saat mengirim pesan.
 6. Pastikan token bot yang sama tidak dipakai service Gateway lain.
@@ -228,10 +228,10 @@ Mode ini memberi terminal Ubuntu di browser, Hermes CLI, dan Gateway yang mulai 
 Buka **Hermes-Ubuntu → Settings → Build**:
 
 1. **Root Directory:** kosong.
-2. **Dockerfile Path:** \`ubuntu/Dockerfile\`.
+2. **Dockerfile Path:** `ubuntu/Dockerfile`.
 3. Simpan perubahan.
 
-🔴 Variabel \`RAILWAY_DOCKERFILE_PATH\` di bawah ini **tidak menggantikan pemeriksaan Dockerfile Path pada Settings**. Pastikan keduanya sesuai.
+🔴 Variabel `RAILWAY_DOCKERFILE_PATH` di bawah ini **tidak menggantikan pemeriksaan Dockerfile Path pada Settings**. Pastikan keduanya sesuai.
 
 ## C2. Isi Variables
 
@@ -249,7 +249,7 @@ TZ=Asia/Jakarta
 PORT=8080
 ~~~
 
-🔴 Password terminal minimal 16 karakter. Username tidak boleh mengandung titik dua (\`:\`). Jangan menggunakan password yang sama dengan akun lain.
+🔴 Password terminal minimal 16 karakter. Username tidak boleh mengandung titik dua (`:`). Jangan menggunakan password yang sama dengan akun lain.
 
 ## C3. Pasang Volume
 
@@ -263,7 +263,7 @@ PORT=8080
 
 4. Simpan dan jangan menghapus Volume setelah bot berjalan.
 
-Folder \`/opt/data\` menyimpan konfigurasi serta state Hermes. Folder \`/data\` untuk file terminal berbeda; tambahkan Volume kedua yang berbeda di \`/data\` jika file terminal juga harus bertahan setelah redeploy.
+Folder `/opt/data` menyimpan konfigurasi serta state Hermes. Folder `/data` untuk file terminal berbeda; tambahkan Volume kedua yang berbeda di `/data` jika file terminal juga harus bertahan setelah redeploy.
 
 ## C4. Buat domain terminal
 
@@ -272,7 +272,7 @@ Folder \`/opt/data\` menyimpan konfigurasi serta state Hermes. Folder \`/data\` 
 3. Pastikan target port domain **8080**.
 4. Simpan dan tunggu deploy selesai.
 
-Buka domain Railway, lalu login menggunakan \`TERMINAL_USER\` dan \`TERMINAL_PASSWORD\`.
+Buka domain Railway, lalu login menggunakan `TERMINAL_USER` dan `TERMINAL_PASSWORD`.
 
 🟡 Jika terminal tidak terbuka, periksa status service, target port 8080, dan Deploy Logs.
 
@@ -310,9 +310,9 @@ Ikuti prompt versi Hermes yang tampil. Contoh alur Google AI Studio:
 
 1. Di daftar platform messaging, pilih **Telegram**.
 2. Jika bot sudah dibuat lewat BotFather, pilih metode **Manual**.
-3. Jika label Manual berada di opsi **2**, masukkan/pilih \`2\` pada terminal browser. Jika nomor berbeda, ikuti nomor yang tampil di layar.
-4. Buka Telegram dan cari \`@BotFather\`.
-5. Jika belum punya bot, kirim \`/newbot\` dan ikuti instruksi.
+3. Jika label Manual berada di opsi **2**, masukkan/pilih `2` pada terminal browser. Jika nomor berbeda, ikuti nomor yang tampil di layar.
+4. Buka Telegram dan cari `@BotFather`.
+5. Jika belum punya bot, kirim `/newbot` dan ikuti instruksi.
 6. Salin token dari BotFather.
 7. Kembali ke terminal browser; tempel token ketika wizard meminta token.
 8. Saat diminta **Allowed user IDs**, masukkan ID Telegram numerik milikmu, bukan username atau token.
@@ -321,7 +321,7 @@ Ikuti prompt versi Hermes yang tampil. Contoh alur Google AI Studio:
 
 📌 Pilihan **Manual / angka 2** diketik di terminal browser. Jangan mengirim angka itu sebagai pesan ke bot Telegram.
 
-Jika ingin mengubah platform messaging kemudian, gunakan \`hermes gateway setup\` dari terminal yang sama.
+Jika ingin mengubah platform messaging kemudian, gunakan `hermes gateway setup` dari terminal yang sama.
 
 ## C8. Pastikan konfigurasi sudah tersimpan
 
@@ -331,9 +331,9 @@ Ketik:
 test -f /opt/data/config.yaml && echo "OK: konfigurasi ditemukan" || echo "Setup belum selesai"
 ~~~
 
-✅ Hasil benar: \`OK: konfigurasi ditemukan\`.
+✅ Hasil benar: `OK: konfigurasi ditemukan`.
 
-Jika muncul \`Setup belum selesai\`, jalankan kembali \`hermes setup\` dan tuntaskan prompt yang belum selesai. Jangan menjalankan perintah uninstall yang dapat menghapus data.
+Jika muncul `Setup belum selesai`, jalankan kembali `hermes setup` dan tuntaskan prompt yang belum selesai. Jangan menjalankan perintah uninstall yang dapat menghapus data.
 
 ## C9. Mulai dan tes Gateway
 
@@ -341,25 +341,25 @@ Jika muncul \`Setup belum selesai\`, jalankan kembali \`hermes setup\` dan tunta
 2. Setelah setup selesai, jika Gateway belum mulai, lakukan **restart service satu kali** dari Railway.
 3. Tunggu log Gateway dan pastikan tidak ada error startup.
 4. Buka Telegram → chat pribadi dengan bot.
-5. Kirim \`/start\), lalu kirim: \`Halo, balas OK.\`
+5. Kirim `/start`, lalu kirim: `Halo, balas OK.`
 
 ✅ Setup berhasil saat Gateway aktif **dan bot benar-benar membalas pesan**.
 
-🟡 Screenshot sebelumnya menunjukkan pesan bahwa setup Telegram terlihat selesai tetapi Gateway belum melaporkan koneksi. Dalam kondisi itu, periksa Deploy Logs; dengan \`HERMES_AUTOSTART=true\`, restart service sekali jika konfigurasi sudah ada. Jangan menjalankan Gateway manual bersamaan dengan auto-start.
+🟡 Screenshot sebelumnya menunjukkan pesan bahwa setup Telegram terlihat selesai tetapi Gateway belum melaporkan koneksi. Dalam kondisi itu, periksa Deploy Logs; dengan `HERMES_AUTOSTART=true`, restart service sekali jika konfigurasi sudah ada. Jangan menjalankan Gateway manual bersamaan dengan auto-start.
 
 ## C10. Jika Telegram tetap diam
 
 Periksa urutan berikut:
 
-1. Pastikan file \`/opt/data/config.yaml\` ditemukan.
-2. Pastikan \`HERMES_AUTOSTART=true\).
+1. Pastikan file `/opt/data/config.yaml` ditemukan.
+2. Pastikan `HERMES_AUTOSTART=true`.
 3. Periksa **Deploy Logs** setelah service direstart.
 4. Pastikan API key/provider/model berfungsi.
 5. Pastikan token Telegram benar dan ID pengguna masuk allowlist.
 6. Pastikan service lain tidak memakai token bot yang sama.
 7. Uji melalui DM terlebih dahulu, bukan grup.
 
-🔴 Jangan menjalankan \`start-hermes\` atau \`hermes gateway run\` ketika \`HERMES_AUTOSTART=true\` dan Gateway sudah dikelola otomatis.
+🔴 Jangan menjalankan `start-hermes` atau `hermes gateway run` ketika `HERMES_AUTOSTART=true` dan Gateway sudah dikelola otomatis.
 
 ---
 
@@ -367,24 +367,24 @@ Periksa urutan berikut:
 
 | Pemeriksaan | Dashboard | Variables | Ubuntu |
 |---|---|---|---|
-| Dockerfile Path | \`Dockerfile\` | \`Dockerfile\` | \`ubuntu/Dockerfile\` |
+| Dockerfile Path | `Dockerfile` | `Dockerfile` | `ubuntu/Dockerfile` |
 | Root Directory | Kosong | Kosong | Kosong |
-| Volume | \`/opt/data\` sendiri | \`/opt/data\` sendiri | \`/opt/data\` sendiri |
+| Volume | `/opt/data` sendiri | `/opt/data` sendiri | `/opt/data` sendiri |
 | Domain | Ya, target 8080 | Tidak perlu | Ya, target 8080 |
-| Kredensial | \`USERNAME\`, \`PASSWORD\`, \`SECRET\` | API key + token platform | \`TERMINAL_USER\`, \`TERMINAL_PASSWORD\` |
+| Kredensial | `USERNAME`, `PASSWORD`, `SECRET` | API key + token platform | `TERMINAL_USER`, `TERMINAL_PASSWORD` |
 | Verifikasi akhir | Login Dashboard berhasil | Gateway dan balasan bot berhasil | CLI setup selesai dan bot membalas |
 
 ### Arti error yang sering muncul
 
 | Error | Langkah pertama |
 |---|---|
-| \`Application failed to respond\` | Periksa Deploy Logs, Build settings, dan target port 8080 untuk Dashboard/Ubuntu |
-| \`SECRET must be at least 32 characters\` | Buat secret acak yang lebih panjang dan redeploy |
-| \`No provider API key found\` | Isi setidaknya satu API key yang valid pada Variables |
+| `Application failed to respond` | Periksa Deploy Logs, Build settings, dan target port 8080 untuk Dashboard/Ubuntu |
+| `SECRET must be at least 32 characters` | Buat secret acak yang lebih panjang dan redeploy |
+| `No provider API key found` | Isi setidaknya satu API key yang valid pada Variables |
 | HTTP 401 / Unauthorized | Periksa API key, provider, dan endpoint |
 | HTTP 429 / quota | Periksa kuota atau batas permintaan provider |
 | Model not found | Pilih model yang tersedia untuk API key-mu |
-| Telegram conflict / \`getUpdates\` | Matikan Gateway lain yang memakai token sama |
+| Telegram conflict / `getUpdates` | Matikan Gateway lain yang memakai token sama |
 | Telegram setup selesai, bot diam | Periksa Gateway di Deploy Logs, allowlist, token, dan provider |
 
 🔴 Jangan bagikan API key, token bot, password, isi konfigurasi, atau log yang masih memuat rahasia.
