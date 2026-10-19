@@ -333,7 +333,7 @@ Terminal dapat terbuka walaupun setup Hermes belum selesai. Pesan bahwa config.y
 
 ## B5. 🔴 Setup Hermes dan Telegram
 
-Ikuti pilihan pada layar yang sedang meminta jawaban. Baca [peta pilihan wizard (provider, model, tools, dan lokasi memasukkan angka)](../docs/PANDUAN-DEPLOY-RAILWAY.md#c5a-peta-pilihan-wizard--pilih-yang-mana) jika menunya banyak.
+Ikuti pilihan pada layar yang sedang meminta jawaban. Baca [peta pilihan wizard (provider, model, tools, dan lokasi memasukkan angka)](../docs/PANDUAN-DEPLOY-RAILWAY.md#c5a-peta-pilihan-wizard-isi-menu-satu-per-satu) jika menunya banyak.
 
 ### 1. Jalankan setup
 
@@ -358,7 +358,7 @@ Pilihan yang disarankan:
 4. **Model:** pilih model **Gemini Flash** yang tersedia untuk chat cepat, atau model **chat/instruct/reasoning** yang bisa diakses pada NVIDIA. Jangan pilih embedding/reranker untuk chat.
 5. **Reasoning effort:** pilih `medium` untuk tugas umum; `low` jika lebih mengutamakan kecepatan.
 6. **Terminal backend:** pilih **Keep current (local)** jika muncul.
-7. Untuk pilihan tools, memory, browser, skills, dan layanan tambahan, ikuti [peta pilihan wizard](../docs/PANDUAN-DEPLOY-RAILWAY.md#c5a-peta-pilihan-wizard--pilih-yang-mana).
+7. Untuk pilihan tools, memory, browser, skills, dan layanan tambahan, ikuti [peta pilihan wizard](../docs/PANDUAN-DEPLOY-RAILWAY.md#c5a-peta-pilihan-wizard-isi-menu-satu-per-satu).
 
 ### 3. Hubungkan Telegram
 
