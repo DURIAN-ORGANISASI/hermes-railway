@@ -41,8 +41,9 @@ permissions:
 
 jobs:
   validate:
-    name: Validate deployment template and docs
+    name: Validate deployment template and build images
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,16 +51,22 @@ jobs:
           python-version: "3.12"
       - name: Validate repository configuration
         run: python scripts/validate_repo.py
+      - name: Test Variables-mode provider configuration
+        run: python scripts/test_deploy_modes.py
       - name: Check local links, heading anchors, and SVGs
         run: python scripts/check_docs.py
       - name: Validate Railway JSON
-        run: |
-          python -m json.tool railway.json > /dev/null
+        run: python -m json.tool railway.json > /dev/null
       - name: Check shell syntax
         run: |
           sh -n railway-entrypoint.sh
           sh -n dashboard-entrypoint.sh
           sh -n variables/railway-entrypoint.sh
+          sh -n variables/generate-config.sh
           bash -n ubuntu/entrypoint.sh
           bash -n ubuntu/start-hermes
           bash -n ubuntu/system-banner.sh
+      - name: Build Dashboard and Variables image
+        run: docker build --pull --file Dockerfile --tag hermes-railway-root:ci .
+      - name: Build Ubuntu Terminal image
+        run: docker build --pull --file ubuntu/Dockerfile --tag hermes-railway-ubuntu:ci .
