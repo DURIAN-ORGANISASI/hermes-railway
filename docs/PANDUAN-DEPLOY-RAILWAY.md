@@ -293,6 +293,106 @@ hermes setup
 
 🔴 Nomor opsi dapat berbeda menurut versi wizard. Ikuti label dan angka yang tampil pada terminalmu.
 
+## C5A. Peta pilihan wizard — pilih yang mana?
+
+Bagian ini menjelaskan **pilihan yang muncul satu per satu**. Nama dan urutan menu bisa berubah mengikuti versi Hermes, jadi cocokkan **labelnya**, bukan menghafal nomor.
+
+### 1. Saat ditanya metode setup
+
+| Pilihan di layar | Yang dilakukan | Alasan |
+|---|---|---|
+| **Full Setup** | ✅ **PILIH INI** | Bisa memakai API key milik sendiri, lalu memilih tools dan Telegram. |
+| Quick Setup / Nous Portal | Jangan pilih untuk setup gratis berbasis API key | Memakai login Nous Portal dan penggunaan mengikuti paket/subscription Portal. |
+| Blank Slate | Lewati untuk tutorial ini | Mulai dengan fitur minimal; lebih banyak hal harus diaktifkan manual. |
+
+🔴 Untuk panduan ini, gunakan **Full Setup** agar langkah provider, tools, dan Telegram terlihat.
+
+### 2. Saat menu memilih provider AI muncul
+
+Pada screenshot sebelumnya, pilihan yang terlihat antara lain:
+
+| Label yang terlihat | Pilih kapan? |
+|---|---|
+| **Google AI Studio** | ✅ **PILIH INI** jika ingin memakai Gemini melalui API key Google AI Studio. Ini contoh yang dipakai pada langkah berikut. |
+| **NVIDIA NIM** | Pilih jika ingin model NVIDIA/Nemotron dan sudah menyiapkan NVIDIA API key. |
+| **Nous Portal** | Pilih hanya jika memang memiliki akses/subscription Nous Portal. |
+| **GitHub Copilot** | Pilih hanya jika akunmu memiliki akses Copilot yang sesuai dan kamu memang ingin memakai login Copilot. |
+| Provider lain, misalnya Groq atau Mistral | Pilih jika kamu sengaja memakai provider itu dan sudah menyiapkan API key-nya. |
+| **Cancel / X** | Jangan pilih kecuali ingin membatalkan pilihan provider. |
+
+🟡 **Penting untuk screenshot:** angka dalam kurung, misalnya `NVIDIA NIM (82)` atau `Google AI Studio (16)`, adalah jumlah model yang ditampilkan pada katalog di picker tersebut—**bukan nomor pilihan yang harus diketik**. Klik label provider yang diinginkan. Jika tampilan terminal meminta nomor, masukkan nomor yang tertera di menu terminal itu.
+
+### 3. Saat provider meminta cara login atau API key
+
+- Jika memilih **Google AI Studio**, pilih alur **API key / Google AI Studio** jika ditawarkan, lalu tempel Google AI Studio API key di prompt terminal.
+- Jika memilih **NVIDIA NIM**, pilih alur API key lalu tempel NVIDIA API key dari akun NVIDIA Developer.
+- Jika memilih **Groq/Mistral**, masukkan key dari provider yang sama.
+- Jika ditawari OAuth untuk layanan subscription, jangan pilih itu jika kamu hanya ingin memakai API key biasa.
+- Jika ditanya Base URL dan kamu tidak memakai endpoint khusus, **tekan Enter untuk memakai default**.
+
+🔴 Tempel API key di prompt terminal browser Railway yang sedang meminta key. **Jangan kirim API key ke chat Telegram/Discord dan jangan tempel ke GitHub.**
+
+### 4. Saat daftar model muncul
+
+| Provider yang dipilih | Model mana yang dipilih? |
+|---|---|
+| Google AI Studio | Pilih model **Gemini Flash** yang benar-benar tersedia di daftar untuk akunmu, untuk percakapan umum yang cepat. Jika tidak ada Flash, pilih model Gemini general-chat yang tersedia. |
+| NVIDIA NIM | Pilih model **chat/instruct/general reasoning** yang dapat diakses oleh API key-mu. Jika ada pilihan gratis, pastikan model tersebut memang tersedia/berkuota pada akunmu. |
+| Groq/Mistral | Pilih model **chat/instruct** yang tersedia dan sesuai kebutuhan; jangan memilih model embedding/reranker untuk percakapan. |
+
+- Jika tidak yakin, pilih model chat/instruct yang ditandai default dan tersedia untuk akunmu.
+- Jika pengaturan konteks ditampilkan, gunakan **64K token atau lebih** jika tersedia.
+- Jika ditanya **Reasoning effort**, pilih `medium` sebagai awal untuk mengikuti instruksi dan tugas umum. Pilih `low` jika mengutamakan kecepatan dan tugasnya sederhana.
+- Jangan memaksakan nama model dari tutorial jika tidak muncul pada daftar. Nama dan akses model bisa berubah.
+
+### 5. Saat ditanya tool/fitur apa yang ingin diaktifkan
+
+Gunakan tabel berikut sebagai pilihan praktis untuk **bot pribadi**. Kalau prompt tidak muncul, lewati saja—tidak perlu mencari menu yang tidak ditampilkan.
+
+| Pilihan/fitur | Rekomendasi | Kapan? |
+|---|---|---|
+| **File Operations / File tools** | ✅ Aktifkan | Agar Hermes bisa membaca dan mengolah file yang diizinkan. |
+| **Terminal & Processes / Terminal tools** | ✅ Aktifkan hanya untuk bot pribadi yang dibatasi ke ID-mu | Memungkinkan menjalankan perintah. Container ini berjalan sebagai root, jadi jangan buka aksesnya untuk publik. |
+| **Web search / Web tools** | ✅ Aktifkan jika tersedia | Agar bisa mencari informasi. Pilih backend yang memang kamu punya akses/key-nya; jangan pilih Nous Subscription jika tidak berlangganan. |
+| **Memory / Session search** | ✅ Aktifkan jika tersedia | Membantu konteks/memori dan pencarian sesi. Pastikan Volume `/opt/data` terpasang agar state persisten. |
+| **Browser automation** | Opsional | Aktifkan jika memang perlu membuka dan berinteraksi dengan situs, dan backend-nya tersedia. Lewati cloud browser berbayar jika tidak punya akses. |
+| **Code execution** | Opsional | Aktifkan untuk analisis/koding yang memerlukannya; kalau diaktifkan, batasi bot hanya untuk akun sendiri. |
+| **Delegation / subagents** | Opsional | Aktifkan jika perlu tugas paralel; bisa menambah pemakaian model/API. Untuk menghemat kuota, lewati dulu. |
+| **Skills bawaan** | Gunakan yang tersedia/default | Tidak perlu memasang semua skill tambahan. Pasang skill pihak ketiga hanya setelah memeriksa sumbernya. |
+| **MCP servers / external integrations** | Skip / No bila belum punya server dan kredensialnya | Nanti bisa ditambahkan setelah dasar bot berjalan. |
+| **Image generation** | Skip jika belum punya provider/key gambar khusus | API key untuk chat tidak otomatis memberi akses generate gambar. |
+| **Voice / TTS** | Skip jika tidak perlu suara | Memerlukan dukungan/backend dan kadang key tersendiri. |
+| **Home Assistant, Spotify, integrasi khusus** | Skip jika tidak dipakai | Aktifkan hanya jika memang punya layanan/credential terkait. |
+
+🟡 Jika menu menggunakan **Yes/No** untuk tiap fitur, ikuti kolom rekomendasi di atas. Jangan memilih "Yes" untuk layanan eksternal hanya karena terlihat tersedia—fitur itu mungkin membutuhkan credential tambahan.
+
+### 6. Saat ditanya backend terminal
+
+- Pilih **Keep current (local)** atau **local** jika ditawarkan.
+- Jangan memilih Docker backend pada template ini kecuali Docker-in-Docker memang sengaja disiapkan.
+- Jika muncul opsi browser/cloud sandbox yang meminta akun atau API key tambahan, pilih Skip/No apabila belum menyiapkannya.
+
+### 7. Saat ditanya memory, profile, atau setting lain
+
+- **Memory provider:** gunakan built-in/default jika ditawarkan; jangan pilih layanan memory eksternal yang meminta akun/key tambahan.
+- **Profile:** gunakan `default` jika itu profil utama yang muncul.
+- **Compression/checkpoints/smart routing:** pertahankan default awal jika kamu belum tahu fungsinya.
+- **Custom system prompt/personality:** tekan Enter untuk default, kecuali memang ingin menyesuaikan instruksi bot.
+- **Install/enable optional plugins:** Skip/No untuk plugin yang belum diperlukan.
+
+### 8. Saat ditanya platform messaging
+
+- Pilih **Telegram** jika ingin menghubungkan Telegram sekarang.
+- Pilih **Discord** juga hanya jika memang ingin menghubungkan Discord dan sudah menyiapkan bot Discord.
+- Jika wizard menawarkan **Manual** dan bot Telegram sudah dibuat lewat BotFather, pilih **Manual**.
+- Semua pilihan wizard dimasukkan di terminal browser Railway. Perintah `/newbot` saja yang dikirim ke akun resmi `@BotFather` di Telegram.
+
+### 9. Saat setup menawarkan menyimpan, menerapkan, atau menyelesaikan konfigurasi
+
+- Pilih **Save / Apply / Yes / Finish** untuk menyimpan konfigurasi yang baru saja dipilih.
+- Jika terminal meminta konfirmasi untuk membatalkan atau menghapus konfigurasi, pilih **No / Cancel** kecuali memang sengaja ingin membatalkan.
+- Tunggu sampai wizard selesai dan kembali ke prompt terminal. Setelah itu jalankan pemeriksaan pada bagian C8.
+
 ## C6. Konfigurasi provider/model
 
 Ikuti prompt versi Hermes yang tampil. Contoh alur Google AI Studio:
