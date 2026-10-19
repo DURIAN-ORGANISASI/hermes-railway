@@ -13,6 +13,7 @@ on:
       - "docs/**"
       - "env-examples/**"
       - "variables/**"
+      - "ubuntu/**"
       - "scripts/**"
       - "*.sh"
       - ".gitignore"
@@ -28,6 +29,7 @@ on:
       - "docs/**"
       - "env-examples/**"
       - "variables/**"
+      - "ubuntu/**"
       - "scripts/**"
       - "*.sh"
       - ".gitignore"
@@ -51,9 +53,13 @@ jobs:
       - name: Check local links, heading anchors, and SVGs
         run: python scripts/check_docs.py
       - name: Validate Railway JSON
-        run: python -m json.tool railway.json > /dev/null
+        run: |
+          python -m json.tool railway.json > /dev/null
       - name: Check shell syntax
         run: |
           sh -n railway-entrypoint.sh
           sh -n dashboard-entrypoint.sh
           sh -n variables/railway-entrypoint.sh
+          bash -n ubuntu/entrypoint.sh
+          bash -n ubuntu/start-hermes
+          bash -n ubuntu/system-banner.sh

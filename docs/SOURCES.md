@@ -1,6 +1,6 @@
 # Sources, attribution, and licensing
 
-This repository wraps the upstream Hermes Agent container for Railway deployment. These are technical/policy references, not endorsements.
+This repository wraps the upstream Hermes Agent container for Dashboard/Variables modes and keeps an independent Ubuntu 26.04 + ttyd image for Ubuntu Terminal mode. These are technical/policy references, not endorsements.
 
 ## Hermes Agent upstream
 
@@ -15,6 +15,8 @@ This repository wraps the upstream Hermes Agent container for Railway deployment
 
 - [Railway documentation](https://docs.railway.com/) / [Railway](https://railway.com/) — services, variables, networking, and volumes.
 - [Docker documentation](https://docs.docker.com/) — container image and runtime concepts.
+- [Ubuntu](https://ubuntu.com/) — Ubuntu base image used by the terminal service.
+- [ttyd](https://github.com/tsl0922/ttyd) — browser-based terminal used by Ubuntu mode.
 - [Telegram Bot API](https://core.telegram.org/bots/api) / [BotFather](https://core.telegram.org/bots#botfather) — official bot API and token setup.
 - [Discord Developer Documentation](https://discord.com/developers/docs/intro) — bot tokens, permissions, intents, and API.
 - [Groq supported models](https://console.groq.com/docs/models), [Mistral model selection](https://docs.mistral.ai/getting-started/models/compare), [NVIDIA Nemotron 3.5 Super VL](https://build.nvidia.com/nvidia/nemotron-3.5-super-vl-120b-a12b), and [Google Gemini models](https://ai.google.dev/gemini-api/docs/models) — official model APIs and availability.
@@ -27,6 +29,7 @@ The wrapper currently starts with `openai/gpt-oss-20b` (Groq), `ministral-3b-lat
 - `railway-entrypoint.sh` selects Dashboard or Variables mode.
 - `dashboard-entrypoint.sh` validates Dashboard variables and maps them to Hermes basic-auth variables.
 - `variables/railway-entrypoint.sh` generates provider/fallback configuration from Railway Variables.
+- `ubuntu/Dockerfile`, `ubuntu/entrypoint.sh`, `ubuntu/start-hermes`, and `ubuntu/system-banner.sh` implement the Ubuntu browser terminal and optional Gateway startup.
 - `docs/brand.svg`, `docs/hero.*.svg`, and `docs/architecture.svg` are original illustrations for this repository, not official Hermes Agent or Railway assets/screenshots.
 
 ## License scope and trademarks

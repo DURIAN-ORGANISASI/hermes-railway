@@ -19,7 +19,8 @@ REQUIRED = [
     "docs/SOURCES.md", "docs/brand.svg", "docs/hero.id.svg",
     "docs/hero.en.svg", "docs/architecture.svg",
     ".github/workflows/validate.yml", "scripts/check_docs.py",
-    "scripts/validate_repo.py",
+    "scripts/validate_repo.py", "ubuntu/Dockerfile", "ubuntu/entrypoint.sh",
+    "ubuntu/start-hermes", "ubuntu/system-banner.sh", "ubuntu/README.md",
 ]
 for relative in REQUIRED:
     if not (ROOT / relative).is_file():
@@ -35,8 +36,8 @@ try:
     config = json.loads(read("railway.json"))
     if config.get("build", {}).get("builder") != "DOCKERFILE":
         ERRORS.append("railway.json must use the DOCKERFILE builder")
-    if config.get("build", {}).get("dockerfilePath") != "Dockerfile":
-        ERRORS.append("railway.json must point to the root Dockerfile")
+    if "dockerfilePath" in config.get("build", {}):
+        ERRORS.append("Root railway.json must leave dockerfilePath unset for per-service RAILWAY_DOCKERFILE_PATH selection")
 except (json.JSONDecodeError, OSError) as exc:
     ERRORS.append(f"Invalid railway.json: {exc}")
 
@@ -67,6 +68,10 @@ for token in (
 
 for relative in ("README.md", "README.en.md"):
     document = read(relative).lower()
+    if relative == "README.md" and "volume berbeda untuk setiap service" not in document:
+        ERRORS.append("README.md must require a different volume per service")
+    if relative == "README.en.md" and "different railway volume for each service" not in document:
+        ERRORS.append("README.en.md must require a different volume per service")
     if "internet" not in document or "password" not in document:
         ERRORS.append(f"{relative} must warn about public Dashboard exposure")
     if "<h1>hermes agent railway</h1>" not in document:
@@ -81,6 +86,22 @@ for relative in ("README.md", "README.en.md"):
         ERRORS.append(f"{relative} must include the private-repository-compatible validation badge")
     if "img.shields.io/badge/project_license-mit-" not in document or 'href="license"' not in document:
         ERRORS.append(f"{relative} must show a static MIT badge linked to the root LICENSE file")
+
+ubuntu_dockerfile = read("ubuntu/Dockerfile")
+for token in ("FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/install.sh", "HERMES_HOME=/opt/data"):
+    if token not in ubuntu_dockerfile:
+        ERRORS.append(f"Missing Ubuntu image behavior: {token}")
+
+ubuntu_readme = read("ubuntu/README.md")
+if "RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile" not in ubuntu_readme:
+    ERRORS.append("Ubuntu README must document its service-specific Dockerfile path variable")
+if "RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile" not in read("README.md"):
+    ERRORS.append("Root README must document the Ubuntu service Dockerfile path variable")
+
+ubuntu_entrypoint = read("ubuntu/entrypoint.sh")
+for token in ("TERMINAL_USER", "TERMINAL_PASSWORD", "HERMES_AUTOSTART", "ttyd", "/opt/data", "/data"):
+    if token not in ubuntu_entrypoint:
+        ERRORS.append(f"Missing Ubuntu terminal behavior: {token}")
 
 for token in (
     "NousResearch/hermes-agent", "MIT License", "Web Dashboard",
@@ -106,5 +127,5 @@ if ERRORS:
         print(f"- {error}")
     sys.exit(1)
 
-print("Validation OK: files, deployment modes, Dashboard warning, and source attribution are present.")
+print("Validation OK: Dashboard, Variables, Ubuntu mode assets, per-service Dockerfile selection, storage isolation, security warning, and source attribution are present.")
 print("Static validation only; it does not test a live Railway deployment.")

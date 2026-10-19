@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+if ! command -v hermes >/dev/null 2>&1; then
+  echo "Hermes CLI is not installed in PATH." >&2
+  exit 1
+fi
+exec hermes gateway run
