@@ -140,7 +140,7 @@ Aktifkan **Message Content Intent** di Discord Developer Portal bila diperlukan.
 
 Mode ini menyediakan Ubuntu 26.04 dengan terminal browser `ttyd`, banner sistem, Git/Python, Hermes CLI, dan Gateway opsional. Mode ini **bukan** Dashboard web Hermes dan tidak menggunakan wrapper Variables untuk membuat ulang `config.yaml`.
 
-**Instalasi Ubuntu langsung di VPS/server:** jika tujuan Anda memasang Hermes pada Ubuntu biasa melalui SSH (bukan container Railway), ikuti [Jalur A dalam panduan instalasi Ubuntu](ubuntu/README.md#jalur-a--instalasi-langsung-di-ubuntu-server-atau-vps). Panduan yang sama juga menjelaskan Jalur B khusus Ubuntu Terminal Railway, beserta provider, Telegram/Discord, penyimpanan, auto-start, dan troubleshooting.
+**Instalasi Ubuntu langsung di VPS/server:** jika tujuan Anda memasang Hermes pada Ubuntu biasa melalui SSH (bukan container Railway), ikuti [Jalur A dalam panduan instalasi Ubuntu](ubuntu/README.md#jalur-a-instalasi-langsung-di-ubuntu-server-atau-vps). Panduan yang sama juga menjelaskan Jalur B khusus Ubuntu Terminal Railway, beserta provider, Telegram/Discord, penyimpanan, auto-start, dan troubleshooting.
 
 Variabel di **Railway → service Ubuntu → Variables**:
 
