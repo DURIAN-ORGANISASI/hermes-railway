@@ -62,8 +62,14 @@ RUN set -eux; \
 
 # Telegram and Discord are optional Hermes extras. Install them into the
 # managed environment at image-build time so Gateway autostart has adapters.
+# NOTE: `hermes pm install` only takes package/tool names (e.g. `chromium`),
+# not Python extra names — it has no `--extra` flag. Extras are selected via
+# the documented `pm.sync_venv()` call. Pass both `all` and `messaging` in a
+# single explicit sync so this doesn't drop the `all` extra the base install
+# already selected (a separate explicit=True call for just `messaging` would
+# replace, not add to, the explicit extras set).
 RUN cd /usr/local/share/hermes-agent && \
-    hermes pm install --extra all --extra messaging
+    python3 -c "from pm import sync_venv; sync_venv(['all', 'messaging'], explicit=True)"
 
 COPY ubuntu/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY ubuntu/system-banner.sh /etc/profile.d/00-system-banner.sh
