@@ -158,7 +158,7 @@ for relative in ("env-examples/dashboard.railway.example", "env-examples/railway
     content = read(relative)
     if re.search(r"(?im)^(?:GROQ|MISTRAL|NVIDIA|GEMINI|GOOGLE)_API_KEY=.{8,}$", content):
         ERRORS.append(f"Possible live provider API key in {relative}")
-    if re.search(r"(?im)^TELEGRAM_BOT_TOKEN=\\S{20,}$", content):
+    if re.search(r"(?im)^TELEGRAM_BOT_TOKEN=\S{20,}$", content):
         ERRORS.append(f"Possible live Telegram token in {relative}")
 
 test_source = read("scripts/test_deploy_modes.py")
