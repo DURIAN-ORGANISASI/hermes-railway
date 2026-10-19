@@ -33,6 +33,9 @@ This repository provides three deployment modes that can run concurrently as thr
 | **Railway Variables** | Telegram/Discord gateway without a web Dashboard. | At least one provider API key; optional chat tokens |
 | **Ubuntu Terminal** | Browser-based Ubuntu 26.04 terminal, Hermes CLI, optional Gateway. | `TERMINAL_USER`, `TERMINAL_PASSWORD`, `HERMES_AUTOSTART` |
 
+> [!IMPORTANT]
+> **Each bot token should belong to only one service.** Dashboard and Variables both run a Gateway; Ubuntu can also run one when `HERMES_AUTOSTART=true`. Do not copy the same Telegram/Discord token to multiple services. Assign each bot to one service, or use different bot tokens, so multiple Gateways do not compete for the same updates/events.
+
 ## Features
 
 - **Three deployment modes:** Dashboard and Variables are selected with `DEPLOY_MODE`; Ubuntu uses a separate Dockerfile selected through `RAILWAY_DOCKERFILE_PATH` so its OS base and terminal features do not alter the upstream Hermes image.
@@ -128,7 +131,7 @@ Set these under **Railway → Ubuntu service → Variables**:
 - On the Ubuntu service, set the service-scoped variable `RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile`. Leave Root Directory empty so the build context stays at repository root, and set the restart policy to `On Failure` with up to 10 retries.
 - Attach a dedicated Volume at `/opt/data` for Hermes config, sessions, memory, and logs. Attach a second, separate Volume at `/data` if terminal-created files must persist.
 - After logging into the terminal, run `hermes setup` and `hermes gateway setup` for your chosen provider and chat channels. Once `/opt/data/config.yaml` exists, `HERMES_AUTOSTART=true` (the default) starts the Gateway automatically; set it to `false` to disable auto-start.
-- Run the Gateway manually with `start-hermes`. Both the terminal and Gateway follow the lifecycle of the Railway container.
+- Auto-start and the `start-hermes` wrapper share a lock at `/opt/data/.gateway.lock`, so the wrapper refuses to start a second Gateway. For manual startup, set `HERMES_AUTOSTART=false` and restart the service before running `start-hermes`. Avoid running `hermes gateway run` directly while auto-start is enabled because that bypasses the wrapper lock.
 - The terminal domain exposes an Ubuntu shell running as root inside the container. Use a strong password, restrict access to the domain, and never commit secrets to GitHub.
 
 > [!NOTE]
@@ -146,6 +149,34 @@ To run all three modes **at the same time**, create three Railway services conne
 6. **Networking:** Variables mode generally needs no public domain. Expose Dashboard only behind OAuth/OIDC or a trusted access gateway. Ubuntu needs a domain for its browser terminal; the shell runs as root inside its container, so use a strong unique password.
 7. Deploy each service manually when ready, inspect Deploy Logs, and test that service. Repository changes do not deploy anything to Railway.
 
+
+## Watch Paths to reduce unrelated redeploys
+
+Configure Watch Paths in **each Railway service's Settings**; a single shared `railway.json` cannot define a different path list for each service. Leave Root Directory empty. Use these patterns:
+
+**Dashboard service**
+```text
+/Dockerfile
+/railway-entrypoint.sh
+/dashboard-entrypoint.sh
+/railway.json
+```
+
+**Variables service**
+```text
+/Dockerfile
+/railway-entrypoint.sh
+/variables/**
+/railway.json
+```
+
+**Ubuntu service**
+```text
+/ubuntu/**
+/railway.json
+```
+
+Railway uses gitignore-style patterns. `railway.json` is intentionally included for all three services because its root configuration can affect each one. Documentation-only changes do not need to rebuild containers. If you add a root-level file used during a build, add its path to the relevant service's Watch Paths. See [Railway Watch Paths documentation](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
 
 ## Architecture and repository layout
 
