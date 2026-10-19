@@ -331,9 +331,9 @@ Terminal dapat terbuka walaupun setup Hermes belum selesai. Pesan bahwa config.y
 
 ## B5. Konfigurasi Hermes dari terminal browser
 
-Pastikan service sudah memakai deployment baru dari repo ini, karena entrypoint baru memiliki Gateway supervisor yang menunggu konfigurasi muncul. Pada Variables, pastikan `HERMES_HOME=/opt/data` dan `HERMES_AUTOSTART=true`.
+Pastikan service sudah memakai deployment terbaru dari repo ini, karena entrypoint repo memiliki Gateway supervisor yang menunggu konfigurasi tersedia. Pada Variables, pastikan HERMES_HOME=/opt/data dan HERMES_AUTOSTART=true.
 
-Jalankan:
+Jalankan di **terminal browser Railway**, bukan di chat Telegram:
 
 ~~~bash
 hermes setup
@@ -341,22 +341,41 @@ hermes setup
 
 Pada layar **How would you like to set up Hermes?**, pilih **Full setup — configure every provider, tool & option yourself** agar tidak diarahkan ke login Nous Portal.
 
-Ikuti wizard untuk setup Gemini dan Telegram sesuai kebutuhan:
+### Penting: di mana mengetik angka 1 atau 2?
 
-1. **Select provider:** `Google AI Studio (Native Gemini API)`.
-2. Masukkan Google AI Studio API key di prompt; jangan salin key ke chat atau GitHub.
-3. Pada **Base URL**, tekan Enter untuk memakai default.
-4. Pilih model Gemini yang tersedia bagi API key. Contoh setup pada repo ini memakai `gemini-3.8-flash` dan reasoning effort `low`.
-5. **Terminal backend:** `Keep current (local)`.
-6. Pada daftar **Messaging Platforms**, pastikan Telegram dipilih.
-7. Pilih **Manual**, masukkan token @BotFather, lalu masukkan numeric Telegram user ID sendiri di **Allowed user IDs**.
-8. Pada **home channel**, pilih Yes.
-9. Browser Automation dan Image Generation boleh di-skip. Microsoft Edge TTS boleh dibiarkan sebagai default gratis; Search Provider boleh di-skip.
-10. Pada pilihan telemetri, pilih **No thanks** jika tidak ingin mengirim metrik penggunaan.
+**Ketik atau pilih angka di terminal browser tempat pertanyaan itu muncul. Jangan kirim angka pilihan setup ke chat Telegram.** Telegram baru digunakan setelah wizard selesai untuk menguji bot.
 
-Wizard dapat menampilkan daftar tool untuk CLI dan Telegram secara terpisah; selesaikan keduanya sampai **Setup Complete**. Untuk setup chat pribadi, nonaktifkan tool berisiko yang tidak dibutuhkan seperti Terminal & Processes, File Operations, Code Execution, dan Computer Use. Container menjalankan terminal sebagai root, sehingga tool tersebut punya akses luas.
+- Jika layar menampilkan menu navigasi, gunakan tombol panah ↑/↓ untuk menyorot pilihan yang diinginkan, lalu tekan Enter.
+- Jika prompt meminta nomor secara langsung, ketik nomor di terminal browser lalu tekan Enter.
+- Angka pilihan bukan kode universal. Selalu baca label di samping angka pada layar yang sedang tampil; nomor dapat berbeda menurut versi Hermes.
 
-Periksa file konfigurasi:
+### Konfigurasi provider
+
+Untuk contoh jalur Gemini:
+
+1. Pada **Select provider**, pilih **Google AI Studio (Native Gemini API)** jika tersedia.
+2. Saat prompt **Google AI Studio API key** muncul, tempel API key di terminal browser lalu tekan Enter. Jangan kirim API key ke Telegram atau GitHub.
+3. Pada **Base URL**, tekan Enter untuk memakai default jika tidak memakai endpoint khusus.
+4. Pilih model Gemini yang benar-benar tersedia untuk API key-mu. Contoh model dapat berubah dan tidak dijamin tersedia untuk semua akun.
+5. Jika prompt **Reasoning effort** tersedia, pilih low untuk memprioritaskan respons ringan/cepat.
+6. Pada **Terminal backend**, pilih **Keep current (local)** jika ditampilkan.
+
+### Konfigurasi Telegram
+
+1. Pada **Select platforms to configure** atau **Messaging Platforms**, pilih Telegram dan pastikan pilihannya aktif sebelum melanjutkan.
+2. Saat prompt **How would you like to create your Telegram bot?** muncul, pilih **Manual** jika kamu sudah memiliki bot dari BotFather. Pada contoh layar yang didokumentasikan di sini, Manual adalah opsi **2**. Pilih opsi itu **di terminal browser**, bukan dengan mengirim pesan 2 ke Telegram.
+3. Untuk menu navigasi, sorot Manual dengan tombol panah lalu tekan Enter. Jika diminta mengetik nomor, masukkan nomor yang tertera di samping label Manual lalu tekan Enter.
+4. Di tab Telegram terpisah, buka @BotFather. Jika belum punya bot, kirim /newbot dan ikuti instruksinya.
+5. Tempel token dari BotFather **ke prompt token di terminal browser**, lalu tekan Enter. Token bot adalah rahasia.
+6. Pada **Allowed user IDs**, masukkan numeric Telegram user ID milik akun yang akan memakai bot. Jangan masukkan username atau token bot.
+7. Jika ditanya **Use your user ID as the home channel?**, pilih Yes untuk penggunaan pribadi.
+8. Selesaikan prompt berikutnya sampai wizard menyatakan **Setup Complete** atau kembali ke prompt shell. Wizard dapat menampilkan daftar tool terpisah untuk CLI dan Telegram; selesaikan setiap daftar yang muncul.
+
+Untuk penggunaan chat pribadi, nonaktifkan tool berisiko yang tidak diperlukan, terutama **Terminal & Processes**, **File Operations**, **Code Execution**, dan **Computer Use**. Container menjalankan terminal sebagai root, sehingga tool tersebut dapat memiliki akses luas. Browser Automation, Image Generation, dan Search Provider boleh di-skip untuk setup chat dasar. Pada **Help improve Hermes?**, pilih **No thanks** jika tidak ingin mengirim metrik penggunaan.
+
+### Verifikasi hasil setup
+
+Setelah wizard selesai, jalankan:
 
 ~~~bash
 test -f /opt/data/config.yaml \
@@ -364,7 +383,7 @@ test -f /opt/data/config.yaml \
   || echo "Konfigurasi belum ada — selesaikan setup dahulu"
 ~~~
 
-Jangan menjalankan `hermes uninstall --full` untuk mengulang wizard; perintah itu menghapus data Hermes persisten di volume /opt/data.
+Lanjutkan hanya jika file konfigurasi ditemukan. Jika belum, jalankan kembali hermes setup dan tuntaskan semua prompt. Jangan menjalankan hermes uninstall --full; perintah itu dapat menghapus data persisten di /opt/data.
 
 ## B6. Jalankan dan uji Gateway
 
