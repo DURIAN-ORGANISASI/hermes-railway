@@ -109,7 +109,7 @@ for token in (
     "raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh",
     "HERMES_HOME=/opt/data", "--retry 8", "--retry-all-errors",
     "--retry-max-time 240", "Acquire::Retries=5", "test -s /tmp/install-hermes.sh",
-    "pm.sync_venv(['messaging'], explicit=True)",
+    "hermes pm install --extra all --extra messaging",
 ):
     if token not in ubuntu_dockerfile:
         ERRORS.append(f"Missing Ubuntu image behavior: {token}")
