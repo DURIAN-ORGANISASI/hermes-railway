@@ -394,3 +394,139 @@ Terminal berjalan sebagai root di container dan dapat diakses melalui domain ser
 | Volume /opt/data cepat penuh | Simpan state pengguna di volume persisten; cache/runtime yang dapat dibuat ulang tetap di luar volume. |
 
 Lihat [README utama](../README.md) untuk mode Dashboard dan Railway Variables.
+
+
+---
+
+# Jika bot sudah dikonfigurasi tetapi tidak membalas
+
+Ikuti urutan ini dari atas ke bawah. Jangan langsung menghapus konfigurasi atau membuat bot baru; log biasanya menunjukkan penyebabnya. Perintah di bagian ini berlaku untuk Hermes CLI upstream. Untuk terminal Railway, gunakan langkah Railway tersendiri di bawah.
+
+## 1. Pastikan satu token hanya dipakai satu Gateway
+
+**Penting untuk repo ini:** jangan menjalankan token Telegram atau Discord yang sama sekaligus di service Dashboard, Variables, dan Ubuntu. Pilih hanya satu service untuk setiap token bot. Untuk pengujian, hentikan Gateway di service lain yang memakai token tersebut, lalu mulai ulang service yang sedang diuji. Telegram polling khususnya dapat memutus salah satu proses jika token yang sama memiliki lebih dari satu poller.
+
+## 2. Pastikan Hermes dan model memang bisa menjawab
+
+Di Ubuntu VPS, login sebagai akun yang memasang Hermes, lalu jalankan:
+
+~~~bash
+command -v hermes
+hermes --version
+hermes doctor
+hermes -z "Balas hanya dengan kata OK."
+~~~
+
+Perintah terakhir menguji pipeline model tanpa Telegram atau Discord. Jika gagal, perbaiki error provider/model terlebih dahulu melalui:
+
+~~~bash
+hermes model
+hermes doctor
+~~~
+
+Pastikan API key benar, model ID tersedia bagi akun Anda, kuota tidak habis, serta endpoint/provider dapat dijangkau. Gateway tidak dapat memperbaiki kegagalan model.
+
+## 3. Periksa konfigurasi dan log tanpa membocorkan token
+
+Hermes standar biasanya menyimpan konfigurasi di ~/.hermes. Jika HERMES_HOME Anda diatur ke /opt/data, gunakan lokasi /opt/data. Jangan menempelkan token asli ke issue, chat publik, atau screenshot.
+
+Ubuntu VPS, lokasi default:
+
+~~~bash
+ls -la ~/.hermes
+tail -n 100 ~/.hermes/logs/gateway.log
+~~~
+
+Ubuntu Terminal Railway pada repo ini:
+
+~~~bash
+ls -la /opt/data
+test -f /opt/data/config.yaml && echo "config.yaml tersedia" || echo "config.yaml belum ada"
+test -f /opt/data/.env && echo ".env tersedia" || echo ".env belum ada"
+test -f /opt/data/logs/gateway.log && tail -n 100 /opt/data/logs/gateway.log || echo "gateway.log belum ada; periksa Railway Deploy Logs"
+~~~
+
+File log dapat berisi data sensitif. Jika akan membagikan log untuk diagnosis, hapus token, API key, URL rahasia, ID pribadi, dan isi percakapan terlebih dahulu.
+
+## 4. Jalankan Gateway di foreground untuk melihat error sebenarnya
+
+Lakukan langkah ini hanya setelah menghentikan service Gateway lain yang memakai token yang sama.
+
+### Ubuntu VPS biasa
+
+Jika Anda memakai user service:
+
+~~~bash
+hermes gateway stop
+hermes gateway run
+~~~
+
+Jika Anda memakai system service, hentikan system service dahulu:
+
+~~~bash
+sudo hermes gateway stop --system
+hermes gateway run
+~~~
+
+Biarkan perintah foreground tetap terbuka, kirim pesan uji, dan perhatikan error yang muncul. Tekan Ctrl+C setelah pengujian. Jangan menyalakan foreground Gateway bersamaan dengan system service.
+
+Setelah penyebabnya diperbaiki, nyalakan lagi hanya satu mode service yang dipilih. User service menggunakan hermes gateway start/status; system service menggunakan sudo hermes gateway start/status --system.
+
+### Ubuntu Terminal Railway pada repo ini
+
+Container Railway tidak mengandalkan systemd. Jika HERMES_AUTOSTART=true, entrypoint dapat menjalankan Gateway supervisor secara otomatis. Periksa Deploy Logs terlebih dahulu dan jangan menjalankan Gateway manual di atas proses auto-start.
+
+Untuk menguji manual, ubah HERMES_AUTOSTART=false di Railway Variables, restart service, login kembali ke terminal browser, lalu jalankan:
+
+~~~bash
+start-hermes
+~~~
+
+Perhatikan output Gateway dan kirim pesan uji. Untuk mengembalikan auto-start, hentikan sesi manual, ubah HERMES_AUTOSTART=true, lalu restart service. Jangan biarkan dua Gateway aktif di container yang sama.
+
+## 5. Jika menggunakan Telegram
+
+1. Uji pesan langsung (DM) ke bot terlebih dahulu, mulai dengan /start. Jangan mulai dari grup.
+2. Jalankan wizard untuk memeriksa token dan allowlist:
+
+~~~bash
+hermes gateway setup
+~~~
+
+Pilih Telegram, masukkan token bot yang benar, kemudian isi ID pengguna Telegram berupa angka, bukan @username. ID dapat diperiksa dengan mengirim pesan ke @userinfobot.
+3. Pastikan TELEGRAM_ALLOWED_USERS memuat ID pengguna Anda. Jika lebih dari satu, gunakan ID angka yang dipisahkan koma sesuai format yang diterima versi Anda.
+4. Pastikan token Telegram yang sama tidak dipakai service Gateway lain. Jika log menyebut conflict atau terminated by other getUpdates request, hentikan Gateway lain yang memakai token tersebut dan mulai ulang hanya satu.
+5. Jika DM bekerja tetapi grup tidak, periksa Privacy Mode di BotFather. Matikan melalui /mybots → pilih bot → Bot Settings → Group Privacy. Setelah mengubah pengaturan, keluarkan bot dari grup lalu tambahkan kembali, atau jadikan bot admin. Di grup, coba juga mention @nama_bot.
+6. Setelah perubahan token atau allowlist, mulai ulang Gateway dan uji lagi.
+
+## 6. Jika menggunakan Discord
+
+1. Mulai dengan DM ke bot. Di server, coba sebut bot menggunakan mention yang benar, misalnya @Hermes. Secara default, Hermes hanya membalas pesan channel yang menyebut bot.
+2. Buka Discord Developer Portal → aplikasi bot → Bot → Privileged Gateway Intents. Aktifkan Message Content Intent, lalu simpan. Jika allowlist memakai username atau role, aktifkan Server Members Intent juga; penggunaan numeric user ID menghindari ketergantungan pada pencocokan nama.
+3. Pastikan bot diundang ke server dan memiliki View Channels, Send Messages, serta Read Message History pada channel uji. Beri izin Embed Links dan Attach Files bila respons membutuhkannya.
+4. Atur kebijakan akses. Untuk penggunaan pribadi, gunakan ID pengguna Discord numerik milik Anda di DISCORD_ALLOWED_USERS. Pada versi Hermes baru, Discord dapat berhasil connect tetapi menolak semua pesan jika tidak ada kebijakan akses. Jangan mengaktifkan allow-all pada server publik untuk mengatasi masalah ini.
+5. Jika hanya satu channel tidak berfungsi, periksa DISCORD_ALLOWED_CHANNELS dan DISCORD_IGNORED_CHANNELS serta pastikan ID channel yang dimasukkan benar.
+6. Restart Gateway dan uji ulang. Periksa log apabila bot online tetapi tetap diam.
+
+## 7. Cara membaca error yang umum
+
+| Pesan/gejala | Makna yang perlu diperiksa |
+| --- | --- |
+| config.yaml belum ada | Wizard setup belum selesai, atau HERMES_HOME berbeda dari lokasi konfigurasi yang diperiksa. |
+| HTTP 401 / Unauthorized dari provider | API key provider salah, dicabut, atau tidak sesuai endpoint. |
+| HTTP 429 / rate limit / quota | Kuota, limit permintaan, atau billing provider; bot mungkin menerima pesan tetapi tidak bisa menghasilkan jawaban. |
+| model not found / HTTP 404 dari model API | Model ID atau endpoint tidak cocok dengan provider yang dipilih. |
+| Telegram conflict / getUpdates | Ada proses lain yang memakai token bot yang sama atau update polling bersamaan. |
+| Telegram unauthorized | ID pengguna tidak diizinkan oleh TELEGRAM_ALLOWED_USERS atau kebijakan akses. |
+| Discord privileged Gateway Intents | Aktifkan intent yang diminta pada Developer Portal dan simpan perubahan. |
+| Discord online tetapi diam di server | Uji DM, mention bot, allowlist pengguna/role, dan channel allowlist/denylist. |
+| Gateway tidak aktif | Periksa perintah service yang sesuai, atau jalankan foreground untuk melihat error. |
+| Model uji berhasil, tetapi bot tetap diam | Fokus pada Gateway, token platform, allowlist, intent, mention/privacy mode, izin channel, atau duplikasi Gateway. |
+
+## 8. Setelah berhasil
+
+Begitu pengujian foreground berhasil, hentikan foreground dengan Ctrl+C dan aktifkan hanya satu pengelola Gateway:
+
+- Ubuntu VPS: pilih user service atau system service dan pastikan aktif setelah reboot.
+- Railway Ubuntu Terminal: pilih auto-start entrypoint atau mode manual; jangan menjalankan keduanya bersamaan.
+- Uji sekali lagi setelah service berjalan di latar belakang. Status service aktif saja belum membuktikan bot berhasil mengirim balasan.
