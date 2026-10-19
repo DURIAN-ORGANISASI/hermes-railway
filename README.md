@@ -185,7 +185,9 @@ Pada image terbaru repo ini, entrypoint menunggu file `/opt/data/config.yaml` ji
 
 Ikuti langkah ini **berurutan**. Semua pilihan setup dijawab di terminal browser Railway, bukan di chat Telegram.
 
-### 1. Siapkan service
+**Arti tanda:** 🔴 wajib/jangan dilewati · 🟡 perhatian/error umum · 📋 blok siap salin · ✅ tanda berhasil · 🧰 perbaikan jika gagal.
+
+### 1. ⚙️ Siapkan service
 
 Railway → project → service Ubuntu → **Settings → Build**:
 
@@ -194,7 +196,7 @@ Railway → project → service Ubuntu → **Settings → Build**:
 - Restart policy: `On Failure`
 - Networking domain: target port `8080`
 
-### 2. Isi Variables
+### 2. 📋 Isi Variables
 
 Railway → service Ubuntu → **Variables**. Ganti username dan password contoh.
 
@@ -210,7 +212,7 @@ TZ=Asia/Jakarta
 PORT=8080
 ~~~
 
-### 3. Pasang volume
+### 3. 💾 Pasang volume
 
 Railway → service Ubuntu → **Volumes** → buat volume dan mount ke:
 
@@ -220,7 +222,7 @@ Railway → service Ubuntu → **Volumes** → buat volume dan mount ke:
 
 Jangan hapus volume ini. Data konfigurasi dan sesi Hermes disimpan di sini.
 
-### 4. Deploy dan buka terminal
+### 4. 🌐 Deploy dan buka terminal
 
 1. Deploy service dan tunggu sampai selesai.
 2. Buka domain dari **Settings → Networking**.
@@ -229,7 +231,7 @@ Jangan hapus volume ini. Data konfigurasi dan sesi Hermes disimpan di sini.
 
 Jika domain tidak terbuka, cek target port `8080` dan **Deploy Logs**.
 
-### 5. Jalankan setup Hermes
+### 5. 🔴 Jalankan setup Hermes
 
 Ketik di terminal browser:
 
@@ -243,7 +245,7 @@ Saat ditanya **How would you like to set up Hermes?**, pilih **Full setup**.
 - Jika diminta nomor: ketik nomor di samping pilihan yang benar, lalu Enter.
 - **Jangan kirim nomor pilihan ke bot Telegram.**
 
-### 6. Atur provider/model
+### 6. 🔑 Atur provider/model
 
 Ikuti prompt yang tampil. Untuk contoh Gemini:
 
@@ -256,7 +258,7 @@ Ikuti prompt yang tampil. Untuk contoh Gemini:
 
 Jangan gunakan model ID contoh jika tidak tersedia di daftar.
 
-### 7. Hubungkan Telegram
+### 7. 🤖 Hubungkan Telegram
 
 1. Pada daftar platform, pilih **Telegram**.
 2. Saat ditanya cara membuat/menghubungkan bot, pilih **Manual** jika bot sudah dibuat melalui BotFather.
@@ -267,7 +269,7 @@ Jangan gunakan model ID contoh jika tidak tersedia di daftar.
 7. Jika ditanya **Use your user ID as the home channel?**, pilih Yes untuk penggunaan pribadi.
 8. Selesaikan semua prompt sampai **Setup Complete** atau kembali ke prompt shell.
 
-### 8. Selesaikan setup dan cek konfigurasi
+### 8. ✅ Selesaikan setup dan cek konfigurasi
 
 Untuk chat pribadi, lewati tools yang tidak dibutuhkan. Hindari mengaktifkan Terminal & Processes, File Operations, Code Execution, atau Computer Use jika tidak diperlukan.
 
@@ -279,7 +281,7 @@ test -f /opt/data/config.yaml && echo "OK: konfigurasi ditemukan" || echo "Setup
 
 Jika hasilnya `Setup belum selesai`, ulangi `hermes setup` dan tuntaskan semua pertanyaan. **Jangan jalankan `hermes uninstall --full`** karena bisa menghapus data.
 
-### 9. Pastikan Gateway aktif
+### 9. 🔴 Pastikan Gateway aktif
 
 1. Railway → service Ubuntu → **Deploy Logs**.
 2. Pastikan Gateway mulai tanpa error.
@@ -288,7 +290,7 @@ Jika hasilnya `Setup belum selesai`, ulangi `hermes setup` dan tuntaskan semua p
 
 Pastikan token bot yang sama tidak digunakan service Dashboard/Variables lain secara bersamaan.
 
-### 10. Tes bot
+### 10. ✅ Tes bot
 
 Baru sekarang buka chat Telegram dengan bot:
 
@@ -296,7 +298,7 @@ Baru sekarang buka chat Telegram dengan bot:
 2. Kirim `Halo, balas OK.`
 3. Jika tidak membalas, lihat **Deploy Logs** saat pesan dikirim.
 
-### 11. Jika gagal, periksa ini
+### 11. 🧰 Jika gagal, periksa ini
 
 | Masalah | Tindakan |
 |---|---|
