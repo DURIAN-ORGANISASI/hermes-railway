@@ -51,14 +51,22 @@ This repository provides three deployment modes that can run concurrently as thr
 
 This is the default when `DEPLOY_MODE` is unset. Add under **Railway → Dashboard service → Variables**:
 
-    DEPLOY_MODE=dashboard
-    USERNAME=admin
-    PASSWORD=replace-with-a-strong-unique-password
-    SECRET=replace-with-a-random-secret-at-least-32-characters-long
+Copy this complete block into **Railway → Hermes-Dashboard → Variables**. Replace every example value before saving:
 
-- Use a unique password and random `SECRET` at least 32 characters long; for example, generate one with `openssl rand -base64 32`.
+```dotenv
+DEPLOY_MODE=dashboard
+USERNAME=replace_with_username
+PASSWORD=REPLACE_WITH_A_STRONG_UNIQUE_PASSWORD
+SECRET=REPLACE_WITH_RANDOM_SECRET_AT_LEAST_32_CHARACTERS
+HERMES_HOME=/opt/data
+TZ=Asia/Jakarta
+PORT=8080
+```
+
+- `USERNAME` and `PASSWORD` protect Dashboard login. `SECRET` must be at least 32 characters; generate it with `openssl rand -hex 32` in a terminal and never copy a public example.
 - Add a Railway Volume mounted at `/opt/data`.
-- The script uses `PORT` if provided; otherwise Dashboard uses port `9119`. The Railway target port must match.
+- `PORT=8080` matches the Railway domain configuration documented here. Under **Settings → Networking**, ensure the domain target port matches the app port, `8080`. If the application port changes, update the domain target too.
+- After saving credentials, deploy/restart the service and inspect **Deploy Logs** and the login page. A `SUCCESS` deployment status alone does not prove HTTP access is working.
 - After securing access, configure providers/models and chat integrations using the official Hermes docs.
 
 > [!IMPORTANT]
@@ -68,19 +76,30 @@ This is the default when `DEPLOY_MODE` is unset. Add under **Railway → Dashboa
 
 This mode does not start the Dashboard. Set variables under **Railway → Variables service → Variables**. At least one provider API key is required; other providers may be empty or omitted.
 
-    DEPLOY_MODE=variables
-    GROQ_API_KEY=
-    MISTRAL_API_KEY=
-    NVIDIA_API_KEY=
-    GEMINI_API_KEY=
-    GOOGLE_API_KEY=
-    TELEGRAM_BOT_TOKEN=
-    TELEGRAM_ALLOWED_USERS=
-    DISCORD_BOT_TOKEN=
-    DISCORD_ALLOWED_USERS=
-    DISCORD_ALLOWED_CHANNELS=
-    DISCORD_FREE_RESPONSE_CHANNELS=
-    DISCORD_AUTO_THREAD=false
+Copy this complete block into **Railway → Hermes-Variables → Variables**. Leave unused provider keys and chat tokens blank or omit them:
+
+```dotenv
+DEPLOY_MODE=variables
+HERMES_HOME=/opt/data
+TZ=Asia/Jakarta
+
+GROQ_API_KEY=
+MISTRAL_API_KEY=
+NVIDIA_API_KEY=
+GEMINI_API_KEY=
+GOOGLE_API_KEY=
+
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_ALLOWED_USERS=
+
+DISCORD_BOT_TOKEN=
+DISCORD_ALLOWED_USERS=
+DISCORD_ALLOWED_CHANNELS=
+DISCORD_FREE_RESPONSE_CHANNELS=
+DISCORD_AUTO_THREAD=false
+```
+
+At least one valid provider API key is required. Empty values are placeholders, not active credentials. Fill the chat token and allowlists only for integrations you will use.
 
 Minimal NVIDIA-only setup:
 
@@ -123,16 +142,39 @@ This mode provides Ubuntu 26.04 with the `ttyd` browser terminal, system banner,
 
 Set these under **Railway → Ubuntu service → Variables**:
 
-    TERMINAL_USER=durianadmin
-    TERMINAL_PASSWORD=unique-password-at-least-16-characters
-    HERMES_AUTOSTART=true
-    TZ=Asia/Jakarta
+Copy this block into **Railway → Hermes-Ubuntu → Variables**. Replace the example credentials first:
 
-- On the Ubuntu service, set the service-scoped variable `RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile`. Leave Root Directory empty so the build context stays at repository root, and set the restart policy to `On Failure` with up to 10 retries.
-- Attach a dedicated Volume at `/opt/data` for Hermes config, sessions, memory, and logs. Attach a second, separate Volume at `/data` if terminal-created files must persist.
-- After logging into the terminal, run `hermes setup` and `hermes gateway setup` for your chosen provider and chat channels. Once `/opt/data/config.yaml` exists, `HERMES_AUTOSTART=true` (the default) starts the Gateway automatically; set it to `false` to disable auto-start.
-- Auto-start and the `start-hermes` wrapper share a lock at `/opt/data/.gateway.lock`, so the wrapper refuses to start a second Gateway. For manual startup, set `HERMES_AUTOSTART=false` and restart the service before running `start-hermes`. Avoid running `hermes gateway run` directly while auto-start is enabled because that bypasses the wrapper lock.
-- The terminal domain exposes an Ubuntu shell running as root inside the container. Use a strong password, restrict access to the domain, and never commit secrets to GitHub.
+```dotenv
+RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile
+TERMINAL_USER=replace_terminal_username
+TERMINAL_PASSWORD=REPLACE_WITH_RANDOM_PASSWORD_AT_LEAST_16_CHARS
+HERMES_HOME=/opt/data
+HERMES_RUNTIME_DIR=/usr/local/share/hermes-tools
+UV_CACHE_DIR=/tmp/uv-cache
+HERMES_AUTOSTART=true
+TZ=Asia/Jakarta
+PORT=8080
+```
+
+- Set the service Dockerfile Path to `ubuntu/Dockerfile` and keep **Root Directory empty** so build context remains the repository root. The service variable is shown as part of the template; also verify the Railway build setting uses the correct Dockerfile. Set restart policy to `On Failure` with up to 10 retries.
+- `TERMINAL_USER` must not contain a colon (`:`); `TERMINAL_PASSWORD` must be at least 16 characters and unique.
+- Attach a dedicated Volume at `/opt/data` for config, sessions/history, memory, and logs. `/data` is the terminal working directory; attach a second, separate Volume at `/data` if files created there must survive redeploys. Never share volumes between services.
+- Open the terminal domain after deployment and log in. Run these setup commands one at a time:
+
+```bash
+hermes setup
+hermes gateway setup
+```
+
+Follow the wizard for provider/model and chat channels. Verify that configuration was created:
+
+```bash
+test -f /opt/data/config.yaml && echo "Configuration found" || echo "Setup incomplete"
+```
+
+After config exists, restart the service in Railway. With `HERMES_AUTOSTART=true`, the entrypoint attempts to start the Gateway automatically. Check Deploy Logs and test by sending a message to the configured Telegram/Discord bot.
+- For manual Gateway startup, set `HERMES_AUTOSTART=false` and restart the service before running `start-hermes`. Do not run a second Gateway while auto-start is enabled; avoid running `hermes gateway run` directly because it bypasses the wrapper lock.
+- **Important security note:** the shell runs as root inside the container. Railway logs may display ttyd credentials in Base64 form (Base64 is not encryption); if credentials ever appeared in logs, immediately rotate `TERMINAL_PASSWORD` in Railway Variables and redeploy. Do not commit secrets to GitHub.
 
 > [!NOTE]
 > Railway has deprecated Config-as-Code (`railway.json`/`railway.toml`) for new services and says existing files stop being read on December 1, 2026. The root file is retained for compatibility with existing services; configure build and restart policies in Railway Settings for new services. See [Railway documentation](https://docs.railway.com/config-as-code).
