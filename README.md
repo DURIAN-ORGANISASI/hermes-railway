@@ -181,104 +181,160 @@ Pada image terbaru repo ini, entrypoint menunggu file `/opt/data/config.yaml` ji
 > Railway telah mendepresiasi Config-as-Code (`railway.json`/`railway.toml`) untuk service baru dan menyatakan file lama berhenti dibaca pada 1 Desember 2026. File root dipertahankan demi kompatibilitas service lama; untuk service baru, atur build dan restart policy dari Settings Railway. Lihat [dokumentasi Railway](https://docs.railway.com/config-as-code).
 
 
-## Setup satu jalur: dari terminal kosong sampai bot Telegram membalas
+## Tutorial lengkap: Ubuntu Railway sampai bot Telegram membalas
 
-Ikuti langkah ini sesuai urutan. Bagian ini khusus untuk **Ubuntu Terminal di Railway** pada repo ini, dan mengikuti layar setup Hermes yang terlihat di terminal. **Jangan jalankan uninstall lagi.** Konfigurasi Hermes dan token disimpan pada volume `/opt/data`.
+Panduan ini khusus untuk **service Ubuntu Terminal** pada repository ini. Ikuti langkah **berurutan dari atas ke bawah**. Jangan mulai dari chat Telegram untuk menjawab pilihan wizard yang sedang tampil di terminal.
 
-### 1. Pastikan Railway memakai image terbaru repo
+> [!IMPORTANT]
+> **Angka pilihan 1 atau 2 dimasukkan di tempat prompt itu muncul.** Jika prompt muncul di halaman terminal browser Railway, klik area terminal lalu pilih opsi di sana—bukan mengirim angka ke chat bot Telegram. Pada menu pilihan, gunakan tombol panah ↑/↓ lalu tekan **Enter** jika wizard memakai menu navigasi. Jika prompt meminta Anda mengetik angka secara langsung, ketik angka di terminal lalu tekan **Enter**. Teks dan urutan opsi bisa berbeda antarversi Hermes; baca label yang tampil, jangan menebak berdasarkan angka saja.
 
-1. Buka Railway → project kamu → service Ubuntu → **Settings → Build**.
-2. Pastikan **Dockerfile Path** = `ubuntu/Dockerfile`, **Root Directory** kosong, dan domain terminal menargetkan port `8080`.
-3. Pastikan volume service terpasang ke `/opt/data`.
-4. Pada Variables, pastikan:
+### Langkah 1 — Pastikan service Railway benar
+
+1. Buka Railway dan pilih project yang berisi service **Ubuntu Terminal**.
+2. Klik service Ubuntu tersebut, lalu buka **Settings → Build**.
+3. Pastikan **Dockerfile Path** adalah ubuntu/Dockerfile.
+4. Pastikan **Root Directory kosong**. Jangan isi /ubuntu; build context harus tetap root repository.
+5. Buka **Settings → Networking** dan pastikan domain terminal menargetkan port 8080.
+6. Buka **Volumes** dan pastikan ada volume khusus service ini yang dipasang ke /opt/data. Jangan menghapus, detach, atau mengganti volume tersebut saat troubleshooting.
+
+### Langkah 2 — Periksa Variables
+
+Buka **service Ubuntu → Variables**. Pastikan variabel berikut ada. Ganti username/password contoh dengan nilai milikmu; jangan menyalin password contoh ke produksi.
 
 ~~~dotenv
+RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile
+TERMINAL_USER=ganti_username_terminal
+TERMINAL_PASSWORD=GANTI_DENGAN_PASSWORD_ACAK_MINIMAL_16_KARAKTER
 HERMES_HOME=/opt/data
 HERMES_RUNTIME_DIR=/usr/local/share/hermes-tools
 UV_CACHE_DIR=/tmp/uv-cache
 HERMES_AUTOSTART=true
+TZ=Asia/Jakarta
 PORT=8080
 ~~~
 
-5. Redeploy service sekali setelah perubahan repo ini masuk ke `main`, lalu tunggu deployment berhasil. Deploy ini memasang perbaikan Gateway auto-start. Jangan hapus atau detach volume `/opt/data`.
+- TERMINAL_USER wajib diisi dan tidak boleh mengandung titik dua (:).
+- TERMINAL_PASSWORD wajib minimal 16 karakter, kuat, dan unik.
+- HERMES_HOME=/opt/data menjaga konfigurasi dan data Hermes di volume persisten.
+- HERMES_AUTOSTART=true membuat supervisor repo menjalankan Gateway setelah konfigurasi tersedia.
+- Pengaturan **Dockerfile Path di Settings** tetap wajib benar; variabel RAILWAY_DOCKERFILE_PATH tidak menggantikan pengaturan build aktual.
 
-### 2. Login ke terminal dan jalankan setup
+Klik **Deploy/Redeploy** jika ada perubahan yang belum diterapkan. Tunggu deployment terbaru selesai, lalu periksa **Deploy Logs**. Jika domain belum bisa dibuka, selesaikan masalah domain/port sebelum lanjut.
 
-Buka domain terminal Railway lalu login memakai `TERMINAL_USER` dan `TERMINAL_PASSWORD`. Jalankan:
+### Langkah 3 — Buka terminal browser dan login
+
+1. Buka domain publik yang dibuat di **Settings → Networking**.
+2. Saat diminta login, masukkan TERMINAL_USER dan TERMINAL_PASSWORD dari Variables.
+3. Setelah prompt shell muncul, kamu sudah berada di **terminal Ubuntu dalam browser**. Perintah Linux dan pilihan wizard berikutnya dijalankan di sini.
+
+Jika halaman tidak terbuka, periksa target port 8080, status deployment, dan Deploy Logs. Jangan memasukkan token Telegram ke halaman login terminal.
+
+### Langkah 4 — Mulai wizard Hermes
+
+Di terminal browser, jalankan perintah ini lalu tekan Enter:
 
 ~~~bash
 hermes setup
 ~~~
 
-Pada layar **How would you like to set up Hermes?**, pilih **Full setup — configure every provider, tool & option yourself**. Jangan pilih Quick Setup (Nous Portal), karena pilihan itu meminta login Portal.
+Saat muncul pertanyaan **How would you like to set up Hermes?**, pilih **Full setup — configure every provider, tool & option yourself** agar kamu bisa mengatur provider dan Telegram sendiri.
 
-Ikuti pilihan ini saat prompt muncul:
+- Jika layar menampilkan menu yang dapat digerakkan, gunakan tombol panah ↑/↓ untuk menyorot **Full setup**, kemudian tekan **Enter**.
+- Jika layar meminta nomor pilihan, masukkan nomor yang berada di samping label **Full setup** pada terminal itu, lalu tekan **Enter**.
+- Jangan mengirim angka pilihan tersebut ke bot Telegram. Bot belum perlu membalas pada tahap setup ini.
 
-1. **Select provider:** pilih `Google AI Studio (Native Gemini API)`.
-2. **Google AI Studio API key:** masukkan API key Gemini milikmu langsung di prompt terminal. Jangan mengirimnya ke chat atau menyimpannya di GitHub.
-3. **Base URL:** tekan `Enter` untuk memakai URL default yang sudah ditampilkan.
-4. **Select default model:** pilih model Gemini yang tersedia dan bisa diakses oleh API key-mu. Di contoh layar setup sebelumnya, pilihan yang digunakan adalah `gemini-3.8-flash`.
-5. **Reasoning effort:** pilih `low` untuk memprioritaskan respons ringan/cepat.
-6. **Terminal backend:** pilih `Keep current (local)`.
-7. **Select platforms to configure:** pastikan hanya Telegram yang dicentang, lalu tekan `Enter`.
+### Langkah 5 — Konfigurasikan provider dan model
 
-### 3. Konfigurasikan Telegram
+Ikuti prompt provider yang benar-benar muncul pada versi Hermes yang terpasang. Untuk jalur Gemini yang digunakan sebagai contoh di repo ini:
 
-Saat ditanya **How would you like to create your Telegram bot?**, pilih `2` (Manual).
+1. Pada **Select provider**, pilih **Google AI Studio (Native Gemini API)** jika pilihan itu tersedia.
+2. Saat prompt meminta **Google AI Studio API key**, tempel API key milikmu di terminal dan tekan Enter. Jangan kirim key ke Telegram, issue GitHub, screenshot, atau commit.
+3. Pada **Base URL**, tekan Enter untuk memakai nilai default jika tidak memiliki endpoint khusus.
+4. Pada **Select default model**, pilih model Gemini yang tersedia untuk API key-mu. Jangan memaksakan ID model dari contoh jika tidak muncul atau tidak tersedia di akunmu.
+5. Pada **Reasoning effort**, pilih low untuk mengutamakan respons ringan/cepat, jika opsi ini tersedia.
+6. Pada **Terminal backend**, pilih **Keep current (local)** jika prompt tersebut muncul.
 
-1. Masukkan token dari `@BotFather`, lalu tekan `Enter`.
-2. Pada **Allowed user IDs**, masukkan numeric Telegram user ID milikmu. Jangan masukkan username seperti `@nama`.
-3. Pada **Use your user ID as the home channel?**, pilih `Yes`.
-4. Untuk pilihan tools CLI dan Telegram, kamu boleh mempertahankan pilihan yang sudah ada, tetapi untuk pemakaian chat paling dasar sebaiknya nonaktifkan tools yang tidak diperlukan, terutama **Terminal & Processes**, **File Operations**, **Code Execution**, dan **Computer Use**. Bot ini berjalan sebagai root di dalam container, jadi tools tersebut memiliki akses luas.
-5. Pada **Browser Automation**, pilih `Skip — keep defaults / configure later`.
-6. Pada **Image Generation**, pilih `Skip — keep defaults / configure later`.
-7. Pada **Text-to-Speech**, `Microsoft Edge TTS` boleh dibiarkan terpilih karena tidak memerlukan API key berbayar; fitur ini opsional.
-8. Pada **Search Provider**, pilih `Skip — keep defaults / configure later` untuk sementara.
-9. Pada **Help improve Hermes?**, pilih `No thanks`.
+Nama, urutan, dan jumlah pilihan bisa berubah mengikuti versi Hermes dan provider. Gunakan label aktual pada layar; bila pilihan tidak sama dengan dokumentasi ini, jangan menebak nomor pilihan.
 
-Jika prompt berulang untuk daftar tools, wizard sedang menyimpan pengaturan terpisah untuk CLI dan Telegram. Selesaikan sampai muncul **Setup Complete** dan kembali ke prompt terminal.
+### Langkah 6 — Pilih platform Telegram
 
-### 4. Pastikan setup tersimpan
+Saat wizard menampilkan daftar **Messaging Platforms** atau **Select platforms to configure**, pilih Telegram. Pastikan pilihan Telegram terpilih sebelum melanjutkan.
 
-Jalankan perintah ini:
+Saat prompt **How would you like to create your Telegram bot?** muncul:
+
+1. Baca label di samping setiap opsi.
+2. Pilih **Manual** jika kamu sudah membuat bot lewat BotFather. Pada layar yang menjadi contoh panduan ini, **Manual adalah opsi 2**. Jadi, jika prompt itu muncul di **terminal browser**, pilih opsi 2 di sana—bukan di chat Telegram.
+3. Untuk menu navigasi, sorot **Manual** dengan tombol panah lalu tekan Enter. Jika diminta memasukkan angka, ketik angka yang sesuai dengan label **Manual** dan tekan Enter.
+4. Buka Telegram di tab/aplikasi terpisah, cari @BotFather, lalu buat bot dengan /newbot jika belum punya.
+5. Salin token yang diberikan BotFather dan tempel **ke prompt token di terminal browser**, lalu tekan Enter. Token adalah rahasia.
+6. Saat prompt **Allowed user IDs** muncul, masukkan **numeric Telegram user ID milik akunmu**, bukan username dan bukan token bot. Masukkan hanya ID yang diizinkan.
+7. Jika ditanya **Use your user ID as the home channel?**, pilih **Yes** jika bot ditujukan untuk percakapan pribadi dengan akun tersebut.
+
+### Langkah 7 — Selesaikan prompt tools dan opsi tambahan
+
+Wizard dapat menampilkan daftar tool beberapa kali—misalnya satu daftar untuk CLI dan daftar lain untuk Telegram. Itu bagian dari setup. Selesaikan setiap prompt hingga wizard menyatakan **Setup Complete** atau kembali ke prompt shell.
+
+Untuk penggunaan chat pribadi yang sederhana:
+
+- Nonaktifkan tool berisiko yang tidak dibutuhkan, terutama **Terminal & Processes**, **File Operations**, **Code Execution**, dan **Computer Use**. Terminal container berjalan sebagai root, sehingga tool tersebut dapat memiliki akses luas.
+- **Browser Automation** dan **Image Generation** boleh di-skip untuk setup chat dasar.
+- **Search Provider** boleh di-skip dahulu; bisa dikonfigurasi belakangan.
+- Pada **Help improve Hermes?**, pilih **No thanks** jika tidak ingin ikut mengirim metrik penggunaan.
+
+Baca label yang muncul. Jika versi Hermes menampilkan prompt berbeda, selesaikan sesuai keterangannya dan jangan mengasumsikan setiap nomor selalu sama.
+
+### Langkah 8 — Pastikan konfigurasi tersimpan
+
+Setelah wizard selesai dan prompt shell muncul kembali, jalankan:
 
 ~~~bash
 test -f /opt/data/config.yaml && echo "Konfigurasi Hermes tersimpan" || echo "KONFIGURASI BELUM ADA"
 ~~~
 
-Jika tertulis konfigurasi tersimpan, lanjut ke langkah 5. Jika belum, jalankan ulang `hermes setup` dan selesaikan wizard sampai tuntas. Tidak perlu menjalankan `hermes uninstall --full`.
+Lanjutkan hanya jika hasilnya **Konfigurasi Hermes tersimpan**. Jika belum ada, jalankan kembali hermes setup dan tuntaskan wizard sampai selesai. Jangan menjalankan hermes uninstall --full; perintah itu dapat menghapus data persisten.
 
-### 5. Tunggu Gateway otomatis berjalan
+### Langkah 9 — Pastikan Gateway mulai
 
-Pada versi repo dengan perbaikan terbaru, entrypoint menunggu sampai `/opt/data/config.yaml` tersedia. Setelah wizard selesai, supervisor akan mendeteksi file tersebut dan mencoba menjalankan Gateway otomatis—tidak perlu menjalankan `hermes gateway run` secara manual saat `HERMES_AUTOSTART=true`.
+Dengan HERMES_AUTOSTART=true, entrypoint repo menunggu /opt/data/config.yaml jika file belum ada, kemudian mencoba menjalankan Gateway. Setelah wizard selesai:
 
-Buka Railway → service Ubuntu → **Deploy Logs**. Cari pesan yang menunjukkan supervisor menunggu/menemukan konfigurasi dan memulai Gateway. Jika log menunjukkan error startup, catat error pertama yang muncul.
+1. Buka Railway → service Ubuntu → **Deploy Logs**.
+2. Cari pesan tentang konfigurasi ditemukan dan Gateway dimulai.
+3. Jika supervisor belum berjalan atau log menampilkan error, simpan pesan error pertama yang muncul. Jangan langsung mengulang instalasi.
 
-### 6. Tes bot Telegram
+Jika Gateway tidak mulai setelah konfigurasi selesai, lakukan **restart service satu kali dari Railway** agar proses membaca konfigurasi final, lalu cek Deploy Logs lagi. Jangan menjalankan Gateway manual bersamaan dengan auto-start.
 
-Buka chat pribadi bot yang tokennya kamu konfigurasi, kirim `/start`, lalu kirim:
+### Langkah 10 — Tes bot di Telegram
 
-~~~text
-Halo, balas hanya dengan OK.
-~~~
+Sekarang buka Telegram—baru pada tahap ini gunakan chat bot untuk pengujian.
 
-Jangan mulai dari grup. Tes DM terlebih dahulu. Jika bot membalas, setup selesai.
+1. Buka chat pribadi dengan bot yang tokennya kamu masukkan.
+2. Kirim /start.
+3. Kirim pesan biasa, misalnya: **Halo, balas hanya dengan OK.**
+4. Tunggu balasan dan periksa Deploy Logs pada saat pesan dikirim.
 
-### 7. Jika bot tetap diam
+Tes melalui DM terlebih dahulu, bukan grup. Jika bot membalas, instalasi dasar selesai.
 
-Jangan mengulang instalasi. Buka **Railway → service Ubuntu → Deploy Logs**, kirim satu pesan ke bot, lalu lihat pesan error terbaru. Cocokkan gejalanya:
+### Langkah 11 — Jika bot masih diam
 
-| Pesan/gejala | Yang harus dilakukan |
+Jangan mengulang instalasi dan jangan menghapus volume. Periksa berdasarkan gejala:
+
+| Gejala | Pemeriksaan berikutnya |
 | --- | --- |
-| Tidak ada log Gateway sama sekali | Pastikan service memakai deployment/image terbaru repo dan `HERMES_AUTOSTART=true`. |
-| HTTP 401 dari Google | API key Gemini salah/dicabut atau provider tidak menerima key tersebut; jalankan `hermes setup model` dan masukkan key yang valid. |
-| HTTP 429 / quota | Kuota atau rate limit Google; cek limit provider sebelum mengubah Telegram. |
-| Model not found / HTTP 404 | Pilih model Gemini yang tersedia bagi API key-mu. |
-| Telegram Conflict / getUpdates | Token yang sama sedang dipakai Gateway lain. Matikan Gateway di service lain dan sisakan satu pemakai token. |
-| Telegram mengabaikan pengguna | Pastikan numeric user ID yang dimasukkan pada allowlist sama dengan akun Telegram yang mengirim pesan. |
-| Gateway mulai lalu langsung keluar | Baca error pertama dari Deploy Logs; jangan hanya mengandalkan status `SUCCESS`. |
+| Domain terminal tidak terbuka | Periksa deployment, domain, target port 8080, dan Deploy Logs. |
+| Terminal terbuka tetapi hermes setup tidak ditemukan | Pastikan service memakai build dari repo ini dan lihat error startup/build. |
+| /opt/data/config.yaml belum ada | Wizard belum selesai; jalankan hermes setup dan tuntaskan semua prompt. |
+| Tidak ada log Gateway | Pastikan HERMES_AUTOSTART=true, konfigurasi tersedia, dan deployment memakai entrypoint terbaru. |
+| HTTP 401 dari provider | API key salah, dicabut, atau tidak cocok dengan provider yang dipilih. Perbaiki konfigurasi provider. |
+| HTTP 429 / quota | Periksa kuota atau rate limit akun provider. |
+| Model not found / HTTP 404 | Pilih model yang benar-benar tersedia untuk API key tersebut. |
+| Telegram Conflict / getUpdates | Token yang sama kemungkinan dipakai Gateway lain. Matikan Gateway lain dan sisakan satu pemakai token. |
+| Bot mengabaikan akunmu | Pastikan numeric user ID yang diizinkan sama dengan akun yang mengirim DM. |
+| Gateway mulai lalu berhenti | Baca error pertama pada Deploy Logs; status deploy SUCCESS saja tidak menjamin bot bekerja. |
 
-**Jangan menjalankan `hermes gateway run` atau `start-hermes` manual ketika `HERMES_AUTOSTART=true`**, supaya tidak membuat proses Gateway kedua. Jangan menghapus volume `/opt/data` sebagai langkah troubleshooting.
+**Jangan jalankan hermes gateway run atau start-hermes secara manual saat HERMES_AUTOSTART=true.** Jika ingin uji manual, ubah HERMES_AUTOSTART=false di Variables, restart service, lalu jalankan start-hermes dari terminal. Setelah pengujian, hentikan proses manual, kembalikan HERMES_AUTOSTART=true, lalu restart service.
+
+> [!WARNING]
+> Terminal berjalan sebagai root di dalam container. Jangan bagikan API key, token bot, atau password terminal. Jika password terminal terlihat di log, rotasi TERMINAL_PASSWORD pada Railway Variables dan redeploy. Base64 bukan enkripsi.
 
 ## Deploy ke Railway
 
