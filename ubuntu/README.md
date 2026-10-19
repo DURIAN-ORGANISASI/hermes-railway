@@ -27,7 +27,7 @@ hermes setup
 hermes gateway setup
 ```
 
-Choose provider/model and messaging channels interactively. When `/opt/data/config.yaml` exists, `HERMES_AUTOSTART=true` (default) starts the Gateway in the background with a restart loop. Set `HERMES_AUTOSTART=false` to keep the terminal without auto-starting the Gateway. You can run `start-hermes` manually for diagnosis.
+Choose provider/model and messaging channels interactively. When `/opt/data/config.yaml` exists, `HERMES_AUTOSTART=true` (default) starts the Gateway in the background with a restart loop. The auto-start supervisor and `start-hermes` use the same lock file at `/opt/data/.gateway.lock`, so the supported wrapper will not start a second Gateway while one already holds the lock. For manual startup, set `HERMES_AUTOSTART=false` and restart the Railway service before running `start-hermes`. Avoid running `hermes gateway run` directly while auto-start is active because a direct CLI command bypasses this guard.
 
 ## Storage boundaries
 
