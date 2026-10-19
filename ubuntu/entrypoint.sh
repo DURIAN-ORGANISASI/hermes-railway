@@ -160,4 +160,4 @@ echo "Starting authenticated Ubuntu + Hermes terminal on port ${PORT}."
 # ttyd prints its Basic Auth credential in base64 during startup; that is reversible.
 # Redact the credential line before forwarding stderr to Railway deployment logs.
 exec /usr/local/bin/ttyd --port "${PORT}" --credential "${TERMINAL_USER}:${TERMINAL_PASSWORD}" --writable --cwd /data bash --login \
-  2> >(sed -u -E 's/(credential:[[:space:]]*)[^[:space:]]+/\\1[redacted]/I' >&2)
+  2> >(sed -u -E 's/(credential:[[:space:]]*)[^[:space:]]+/\1[redacted]/I' >&2)
