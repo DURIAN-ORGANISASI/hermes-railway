@@ -88,7 +88,7 @@ for relative in ("README.md", "README.en.md"):
         ERRORS.append(f"{relative} must show a static MIT badge linked to the root LICENSE file")
 
 ubuntu_dockerfile = read("ubuntu/Dockerfile")
-for token in ("FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/install.sh", "HERMES_HOME=/opt/data"):
+for token in ("FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/install.sh", "HERMES_HOME=/opt/data", "--retry 8", "--retry-all-errors", "--retry-max-time 240", "Acquire::Retries=5", "test -s /tmp/install-hermes.sh"):
     if token not in ubuntu_dockerfile:
         ERRORS.append(f"Missing Ubuntu image behavior: {token}")
 
