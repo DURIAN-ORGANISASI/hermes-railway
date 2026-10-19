@@ -278,7 +278,7 @@ Buka domain Railway, lalu login menggunakan `TERMINAL_USER` dan `TERMINAL_PASSWO
 
 ## C5. Jalankan wizard Hermes
 
-Semua langkah berikut dilakukan **di terminal browser Railway**, bukan di Telegram.
+Perintah `hermes setup` dijalankan di **terminal browser Railway**. Prompt dari wizard CLI dijawab di terminal. Jika yang kamu lihat adalah menu/pertanyaan terpisah yang dikirim bot di chat Telegram, pilih tombol atau balas angka di chat Telegram yang sama—ikuti instruksi di layar tersebut.
 
 Ketik:
 
