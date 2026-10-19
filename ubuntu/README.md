@@ -329,7 +329,9 @@ Jika terminal tidak dapat dibuka, pastikan domain menargetkan port 8080, service
 
 Terminal dapat terbuka walaupun setup Hermes belum selesai. Pesan bahwa config.yaml belum ditemukan berarti Gateway belum siap, bukan berarti image harus dibangun ulang.
 
-## B5. Konfigurasi Hermes di terminal browser
+## B5. Konfigurasi Hermes dari terminal browser
+
+Pastikan service sudah memakai deployment baru dari repo ini, karena entrypoint baru memiliki Gateway supervisor yang menunggu konfigurasi muncul. Pada Variables, pastikan `HERMES_HOME=/opt/data` dan `HERMES_AUTOSTART=true`.
 
 Jalankan:
 
@@ -337,13 +339,24 @@ Jalankan:
 hermes setup
 ~~~
 
-Ikuti wizard provider/model. Untuk menghubungkan chat:
+Pada layar **How would you like to set up Hermes?**, pilih **Full setup — configure every provider, tool & option yourself** agar tidak diarahkan ke login Nous Portal.
 
-~~~bash
-hermes gateway setup
-~~~
+Ikuti wizard untuk setup Gemini dan Telegram sesuai kebutuhan:
 
-Simpan API key dan token melalui wizard, bukan di GitHub atau log publik. Periksa konfigurasi persisten:
+1. **Select provider:** `Google AI Studio (Native Gemini API)`.
+2. Masukkan Google AI Studio API key di prompt; jangan salin key ke chat atau GitHub.
+3. Pada **Base URL**, tekan Enter untuk memakai default.
+4. Pilih model Gemini yang tersedia bagi API key. Contoh setup pada repo ini memakai `gemini-3.8-flash` dan reasoning effort `low`.
+5. **Terminal backend:** `Keep current (local)`.
+6. Pada daftar **Messaging Platforms**, pastikan Telegram dipilih.
+7. Pilih **Manual**, masukkan token @BotFather, lalu masukkan numeric Telegram user ID sendiri di **Allowed user IDs**.
+8. Pada **home channel**, pilih Yes.
+9. Browser Automation dan Image Generation boleh di-skip. Microsoft Edge TTS boleh dibiarkan sebagai default gratis; Search Provider boleh di-skip.
+10. Pada pilihan telemetri, pilih **No thanks** jika tidak ingin mengirim metrik penggunaan.
+
+Wizard dapat menampilkan daftar tool untuk CLI dan Telegram secara terpisah; selesaikan keduanya sampai **Setup Complete**. Untuk setup chat pribadi, nonaktifkan tool berisiko yang tidak dibutuhkan seperti Terminal & Processes, File Operations, Code Execution, dan Computer Use. Container menjalankan terminal sebagai root, sehingga tool tersebut punya akses luas.
+
+Periksa file konfigurasi:
 
 ~~~bash
 test -f /opt/data/config.yaml \
@@ -351,25 +364,21 @@ test -f /opt/data/config.yaml \
   || echo "Konfigurasi belum ada — selesaikan setup dahulu"
 ~~~
 
-Jika belum ada, selesaikan wizard dan perbaiki error yang ditampilkan.
+Jangan menjalankan `hermes uninstall --full` untuk mengulang wizard; perintah itu menghapus data Hermes persisten di volume /opt/data.
 
 ## B6. Jalankan dan uji Gateway
 
-Setelah /opt/data/config.yaml tersedia, restart service dari Railway. Dengan HERMES_AUTOSTART=true, entrypoint seharusnya mendeteksi konfigurasi dan memulai supervisor Gateway.
+Setelah setup, entrypoint baru memeriksa `/opt/data/config.yaml` setiap lima detik. Jika `HERMES_AUTOSTART=true` dan file konfigurasi tersedia, supervisor akan memulai `hermes gateway run` secara otomatis. Karena itu, pada deployment baru yang memuat perbaikan ini, tidak perlu menjalankan Gateway secara manual atau restart service setelah wizard.
 
-Periksa Deploy Logs lalu kirim pesan uji ke Telegram/Discord. Status deploy SUCCESS tidak menjamin provider, token, izin bot, atau balasan pesan telah bekerja.
+Buka Railway → service Ubuntu → **Deploy Logs**, tunggu pesan Gateway mulai, lalu kirim pesan **DM** ke bot Telegram: `/start` kemudian `Halo, balas OK`. Jangan mulai dari grup.
 
-Untuk Gateway manual:
+Jika Gateway tidak muncul di Deploy Logs:
 
-1. Set HERMES_AUTOSTART=false di Railway Variables.
-2. Restart service.
-3. Jalankan:
+1. Pastikan service telah memakai deployment terbaru dari repo ini.
+2. Pastikan `HERMES_AUTOSTART=true` pada service Variables.
+3. Baca error pertama yang muncul pada Deploy Logs ketika supervisor mencoba menjalankan Gateway.
 
-~~~bash
-start-hermes
-~~~
-
-Wrapper start-hermes dan auto-start menggunakan lock /opt/data/.gateway.lock. Jangan memulai Gateway kedua pada service yang sama. Hindari menjalankan hermes gateway run langsung saat auto-start aktif karena melewati lock wrapper.
+Untuk pengujian manual saja: set `HERMES_AUTOSTART=false` pada Variables, restart service, lalu jalankan `start-hermes` di terminal browser. Jangan menjalankan `start-hermes` atau `hermes gateway run` manual saat auto-start aktif. Setelah tes manual, hentikan proses, kembalikan `HERMES_AUTOSTART=true`, lalu restart service.
 
 ## B7. Penyimpanan dan keamanan Railway
 
