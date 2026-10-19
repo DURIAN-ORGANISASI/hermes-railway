@@ -185,7 +185,7 @@ Pada image terbaru repo ini, entrypoint menunggu file `/opt/data/config.yaml` ji
 
 ## Tutorial Ubuntu Railway: dari awal sampai bot membalas
 
-Ikuti langkah ini **berurutan**. Semua pilihan setup dijawab di terminal browser Railway, bukan di chat Telegram.
+Ikuti langkah ini **berurutan**. Perintah `hermes setup` dijalankan di terminal browser Railway. **Prompt dari wizard terminal dijawab di terminal**; tetapi jika bot mengirim menu/pertanyaan tersendiri di chat Telegram, pilih tombol atau balas angka di chat yang sama sesuai instruksi bot.
 
 **Arti tanda:** 🔴 wajib/jangan dilewati · 🟡 perhatian/error umum · 📋 blok siap salin · ✅ tanda berhasil · 🧰 perbaikan jika gagal.
 
