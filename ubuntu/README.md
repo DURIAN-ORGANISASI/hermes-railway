@@ -11,7 +11,7 @@ Dokumentasi resmi: [Installation](https://hermes-agent.nousresearch.com/docs/get
 
 ---
 
-# Jalur A — Instalasi langsung di Ubuntu Server atau VPS
+# Jalur A: Instalasi langsung di Ubuntu Server atau VPS
 
 ## A1. Persiapan
 
