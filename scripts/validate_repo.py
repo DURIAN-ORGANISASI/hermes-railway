@@ -100,7 +100,8 @@ for relative in ("README.md", "README.en.md"):
     document = read(relative).lower()
     if "watch paths" not in document or "railway-entrypoint.sh" not in document:
         ERRORS.append(f"{relative} must document per-service Watch Paths")
-    if "token" not in document or "one service" not in document:
+    exclusive_owner_phrase = "satu service" if relative == "README.md" else "one service"
+    if "token" not in document or exclusive_owner_phrase not in document:
         ERRORS.append(f"{relative} must warn against assigning one bot token to multiple services")
 
 for relative in ("ubuntu/entrypoint.sh", "ubuntu/start-hermes"):
