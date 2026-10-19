@@ -1,0 +1,18 @@
+# MODE UBUNTU TERMINAL — Railway > Hermes-Ubuntu > Variables.
+# Ganti kredensial terminal sebelum deploy; jangan commit nilai rahasia.
+RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile
+TERMINAL_USER=ganti_username_terminal
+TERMINAL_PASSWORD=GANTI_PASSWORD_ACAK_MINIMAL_16_KARAKTER
+HERMES_HOME=/opt/data
+HERMES_RUNTIME_DIR=/usr/local/share/hermes-tools
+UV_CACHE_DIR=/tmp/uv-cache
+HERMES_AUTOSTART=true
+TZ=Asia/Jakarta
+PORT=8080
+
+# Build Settings: Dockerfile Path = ubuntu/Dockerfile; Root Directory tetap kosong.
+# Volume wajib: /opt/data; tambahkan volume BERBEDA di /data bila perlu menyimpan file terminal.
+# Setup pertama di terminal:
+#   hermes setup
+#   hermes gateway setup
+# Lalu pastikan /opt/data/config.yaml ada dan restart service.
