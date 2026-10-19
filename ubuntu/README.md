@@ -273,11 +273,13 @@ Urutan diagnosis yang disarankan: **(1) hermes doctor, (2) tes chat lokal, (3) h
 
 # Jalur B — Ubuntu Terminal di Railway
 
+**Arti tanda:** 🔴 wajib/jangan dilewati · 🟡 perhatian/error umum · 📋 blok siap salin · ✅ tanda berhasil · 🧰 perbaikan jika gagal.
+
 Bagian ini khusus untuk mode **Ubuntu Terminal** pada repo ini. Anda tidak perlu memasang Ubuntu atau Hermes dari awal di terminal browser: image ubuntu/Dockerfile sudah memasang Ubuntu dan Hermes saat build. Anda hanya perlu mengatur Railway, membuka terminal browser, lalu menyelesaikan wizard Hermes.
 
 Mode ini **bukan** Dashboard web Hermes dan bukan VPS Ubuntu penuh dengan systemd. Container menggunakan ttyd serta entrypoint repo untuk terminal dan auto-start Gateway.
 
-## B1. Buat service Railway
+## B1. ⚙️ Buat service Railway
 
 1. Hubungkan service baru ke DURIAN-ORGANISASI/hermes-railway, branch main.
 2. Biarkan **Root Directory kosong** agar build context tetap root repo.
@@ -285,7 +287,7 @@ Mode ini **bukan** Dashboard web Hermes dan bukan VPS Ubuntu penuh dengan system
 4. Atur restart policy menjadi **On Failure**, maksimal 10 retry.
 5. Buat domain Railway. Terminal mendengarkan pada port 8080, sehingga target port domain harus sama.
 
-## B2. Isi Railway Variables
+## B2. 📋 Isi Railway Variables
 
 Salin blok ini ke **Railway → service Ubuntu → Variables**. Ganti kredensial contoh sebelum deploy:
 
@@ -307,7 +309,7 @@ PORT=8080
 - HERMES_AUTOSTART=true membuat entrypoint menjalankan Gateway setelah konfigurasi tersedia.
 - Jangan gunakan password yang sama dengan akun lain.
 
-## B3. Pasang volume persisten
+## B3. 💾 Pasang volume persisten
 
 Buat Railway Volume khusus service Ubuntu dan mount ke:
 
@@ -321,7 +323,7 @@ Direktori kerja terminal adalah /data. File di sana belum tentu bertahan setelah
 
 Runtime dan cache yang dapat dibuat ulang dipisahkan dari volume utama agar tidak cepat memenuhi penyimpanan.
 
-## B4. Deploy dan buka terminal
+## B4. 🌐 Deploy dan buka terminal
 
 Deploy service dan tunggu build/startup selesai. Buka domain Railway dan login menggunakan TERMINAL_USER serta TERMINAL_PASSWORD.
 
@@ -329,7 +331,7 @@ Jika terminal tidak dapat dibuka, pastikan domain menargetkan port 8080, service
 
 Terminal dapat terbuka walaupun setup Hermes belum selesai. Pesan bahwa config.yaml belum ditemukan berarti Gateway belum siap, bukan berarti image harus dibangun ulang.
 
-## B5. Setup Hermes dan Telegram
+## B5. 🔴 Setup Hermes dan Telegram
 
 Ikuti langkah berikut **di terminal browser Railway**, bukan di chat Telegram.
 
@@ -377,7 +379,7 @@ test -f /opt/data/config.yaml && echo "Konfigurasi ditemukan" || echo "Setup bel
 
 Jika belum ditemukan, jalankan kembali `hermes setup` dan selesaikan semua prompt. Jangan gunakan `hermes uninstall --full`, karena bisa menghapus data di volume.
 
-## B6. Jalankan dan uji Gateway
+## B6. ✅ Jalankan dan uji Gateway
 
 Setelah setup selesai sepenuhnya, restart service Ubuntu sekali melalui Railway supaya Gateway membaca konfigurasi Telegram final. Entrypoint baru tetap memeriksa `/opt/data/config.yaml` setiap lima detik apabila setup awal belum selesai ketika container mulai. Jika `HERMES_AUTOSTART=true`, supervisor akan menjalankan `hermes gateway run` setelah restart. Jangan menjalankan Gateway manual bersamaan dengan auto-start.
 
@@ -391,7 +393,7 @@ Jika Gateway tidak muncul di Deploy Logs:
 
 Untuk pengujian manual saja: set `HERMES_AUTOSTART=false` pada Variables, restart service, lalu jalankan `start-hermes` di terminal browser. Jangan menjalankan `start-hermes` atau `hermes gateway run` manual saat auto-start aktif. Setelah tes manual, hentikan proses, kembalikan `HERMES_AUTOSTART=true`, lalu restart service.
 
-## B7. Penyimpanan dan keamanan Railway
+## B7. 🟡 Penyimpanan dan keamanan Railway
 
 - /opt/data: konfigurasi, sesi/history, memori, dan log Hermes.
 - /data: file terminal; persisten hanya jika dipasang volume terpisah.
@@ -401,7 +403,7 @@ Terminal berjalan sebagai root di container dan dapat diakses melalui domain ser
 
 **Peringatan log:** ttyd dapat mencetak kredensial HTTP Basic Auth dalam bentuk Base64. Base64 bukan enkripsi. Jika password terminal muncul di log, anggap kredensial terekspos: rotasi TERMINAL_PASSWORD, simpan perubahan, lalu redeploy.
 
-## B8. Troubleshooting Railway
+## B8. 🧰 Troubleshooting Railway
 
 | Gejala | Pemeriksaan |
 | --- | --- |
