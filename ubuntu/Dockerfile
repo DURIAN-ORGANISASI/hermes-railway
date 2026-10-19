@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bash ca-certificates curl coreutils procps sed git \
     python3 python3-venv python3-pip \
     build-essential pkg-config libffi-dev libssl-dev xz-utils util-linux \
+    libx11-6 libxext6 libxrender1 libxi6 libxtst6 \
     && (apt-get install -y --no-install-recommends fastfetch || true) \
     && rm -rf /var/lib/apt/lists/*
 
