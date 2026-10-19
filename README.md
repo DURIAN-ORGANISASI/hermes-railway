@@ -11,7 +11,7 @@
 <p><strong>Jalankan Hermes Agent di Railway.</strong><br>
 Tersedia tiga mode: Dashboard, Railway Variables, dan Ubuntu Terminal.</p>
 
-<p><a href="#fitur">Fitur</a> · <a href="#pilih-mode">Mode deployment</a> · <a href="#deploy-ke-railway">Deploy</a> · <a href="#keamanan-dashboard">Keamanan</a> · <a href="#sumber-atribusi-dan-lisensi">Sumber &amp; lisensi</a></p>
+<p><a href="docs/PANDUAN-DEPLOY-RAILWAY.md">📘 Panduan deploy dari awal sampai berhasil</a> · <a href="#fitur">Fitur</a> · <a href="#pilih-mode">Mode deployment</a> · <a href="#deploy-ke-railway">Deploy</a> · <a href="#keamanan-dashboard">Keamanan</a> · <a href="#sumber-atribusi-dan-lisensi">Sumber &amp; lisensi</a></p>
 
 </div>
 
@@ -26,6 +26,8 @@ Tersedia tiga mode: Dashboard, Railway Variables, dan Ubuntu Terminal.</p>
 ## Ringkasan
 
 Repo ini menyediakan tiga mode deployment yang dapat berjalan bersamaan sebagai tiga Railway service terpisah. Dashboard dan Variables memakai image Hermes upstream; Ubuntu memakai Dockerfile Ubuntu khusus di `ubuntu/Dockerfile`.
+
+> 📘 **Panduan untuk pemula:** ikuti [Panduan Deploy dari awal sampai berhasil](docs/PANDUAN-DEPLOY-RAILWAY.md) untuk langkah klik di Railway, blok Variables ketiga mode, port/domain, setup Telegram, serta solusi error `Application failed to respond`.
 
 | Mode | Tujuan | Variabel utama |
 | --- | --- | --- |
