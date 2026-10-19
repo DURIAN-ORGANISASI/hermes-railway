@@ -140,7 +140,7 @@ if [[ "${HERMES_AUTOSTART:-true}" == "true" || "${HERMES_AUTOSTART:-true}" == "1
       announced_wait=false
       echo "Starting Hermes Gateway under the shared process lock..."
       status=0
-      flock -n "${GATEWAY_LOCK_FILE}" -- hermes gateway run || status=$?
+      flock -n "${GATEWAY_LOCK_FILE}" hermes gateway run || status=$?
       if [[ "${status}" -eq 0 ]]; then
         echo "Hermes Gateway exited normally; retrying in 5 seconds."
       else
