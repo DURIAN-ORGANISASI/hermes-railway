@@ -140,7 +140,7 @@ Aktifkan **Message Content Intent** di Discord Developer Portal bila diperlukan.
 
 Mode ini menyediakan Ubuntu 26.04 dengan terminal browser `ttyd`, banner sistem, Git/Python, Hermes CLI, dan Gateway opsional. Mode ini **bukan** Dashboard web Hermes dan tidak menggunakan wrapper Variables untuk membuat ulang `config.yaml`.
 
-Untuk setup mode Ubuntu Terminal di Railway dari login terminal sampai bot membalas, ikuti [panduan satu jalur di bawah ini](#setup-satu-jalur-dari-login-terminal-sampai-bot-membalas).
+Untuk setup mode Ubuntu Terminal di Railway dari login terminal sampai bot membalas, ikuti [panduan satu jalur di bawah ini](#setup-satu-jalur-dari-terminal-kosong-sampai-bot-telegram-membalas).
 
 Variabel di **Railway → service Ubuntu → Variables**:
 
