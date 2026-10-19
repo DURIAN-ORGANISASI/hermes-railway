@@ -115,28 +115,45 @@ else
 fi
 cd /data
 
-# Use the same OS-level lock for auto-start and the start-hermes wrapper so
-# the supported manual command cannot start a second Gateway in this container.
+# Keep a supervisor alive whenever auto-start is enabled. The terminal is often
+# opened before the user runs "hermes setup", so config.yaml may not exist at
+# initial container boot. Wait for the file instead of permanently skipping
+# Gateway startup; once setup writes it, the Gateway starts without requiring a
+# manual container restart.
 GATEWAY_LOCK_FILE="${HERMES_HOME}/.gateway.lock"
 if [[ "${HERMES_AUTOSTART:-true}" == "true" || "${HERMES_AUTOSTART:-true}" == "1" ]]; then
-  if [[ -f "${HERMES_HOME}/config.yaml" ]]; then
-    (
-      echo "Hermes config found; starting Gateway supervisor."
-      while true; do
-        echo "Starting Hermes Gateway under a shared process lock..."
-        if flock -n "${GATEWAY_LOCK_FILE}" -- hermes gateway run; then
-          echo "Hermes Gateway exited normally; retrying in 5 seconds."
-        else
-          status=$?
-          echo "Hermes Gateway exited (status ${status}) or another process holds the Gateway lock; retrying in 5 seconds." >&2
+  (
+    announced_wait=false
+    while true; do
+      if [[ ! -f "${HERMES_HOME}/config.yaml" ]]; then
+        if [[ "${announced_wait}" != "true" ]]; then
+          echo "Hermes config not found at ${HERMES_HOME}/config.yaml; waiting for setup to finish."
+          announced_wait=true
         fi
         sleep 5
-      done
-    ) &
-  else
-    echo "Hermes is installed, but setup has not created ${HERMES_HOME}/config.yaml yet."
-    echo "Open the terminal, run 'hermes setup' and 'hermes gateway setup', then restart the service."
-  fi
+        continue
+      fi
+
+      if [[ "${announced_wait}" == "true" ]]; then
+        echo "Hermes config found; starting the Gateway supervisor."
+      fi
+      announced_wait=false
+      echo "Starting Hermes Gateway under the shared process lock..."
+      status=0
+      flock -n "${GATEWAY_LOCK_FILE}" -- hermes gateway run || status=$?
+      if [[ "${status}" -eq 0 ]]; then
+        echo "Hermes Gateway exited normally; retrying in 5 seconds."
+      else
+        echo "Hermes Gateway exited with status ${status}, or another process holds the Gateway lock; retrying in 5 seconds." >&2
+      fi
+      sleep 5
+    done
+  ) &
+  GATEWAY_SUPERVISOR_PID=$!
+  echo "Hermes Gateway supervisor started in the background (PID ${GATEWAY_SUPERVISOR_PID})."
+else
+  echo "Hermes Gateway auto-start is disabled (HERMES_AUTOSTART=${HERMES_AUTOSTART:-false})."
+  echo "After setup, start manually with start-hermes."
 fi
 
 echo "Starting authenticated Ubuntu + Hermes terminal on port ${PORT}."
