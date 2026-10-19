@@ -173,7 +173,7 @@ Pilih **Full setup**, pilih provider/model, dan konfigurasi Telegram saat dimint
 test -f /opt/data/config.yaml && echo "Konfigurasi ditemukan" || echo "Setup belum selesai"
 ~~~
 
-Pada image terbaru repo ini, entrypoint menunggu file `/opt/data/config.yaml` jika setup belum selesai. Setelah wizard benar-benar selesai, restart service Ubuntu sekali dari Railway agar Gateway membaca konfigurasi final. Dengan `HERMES_AUTOSTART=true`, entrypoint akan menjalankan Gateway saat container mulai. Jangan menjalankan Gateway manual bersamaan dengan auto-start. Periksa Railway Deploy Logs dan tes pesan DM ke bot.
+Pada image terbaru repo ini, entrypoint menunggu file `/opt/data/config.yaml` jika setup belum selesai. Dengan `HERMES_AUTOSTART=true`, supervisor akan mencoba menjalankan Gateway setelah file konfigurasi tersedia. Periksa Railway Deploy Logs; restart service dari Railway hanya jika Gateway tidak mulai setelah setup selesai. Jangan menjalankan Gateway manual bersamaan dengan auto-start. Tes pesan DM ke bot.
 - Untuk menjalankan Gateway manual, set `HERMES_AUTOSTART=false`, restart service, lalu gunakan `start-hermes`. Jangan menjalankan Gateway kedua saat auto-start aktif; jangan menjalankan `hermes gateway run` langsung karena itu melewati lock wrapper.
 - **Keamanan penting:** shell berjalan sebagai root di dalam container. Log Railway sebelumnya menampilkan kredensial ttyd dalam bentuk Base64 (Base64 bukan enkripsi); jika kredensial pernah tercetak pada log, segera rotasi `TERMINAL_PASSWORD`, simpan, lalu redeploy. Jangan menyimpan rahasia di GitHub.
 
