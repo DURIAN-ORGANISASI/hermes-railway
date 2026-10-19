@@ -119,6 +119,8 @@ ubuntu_entrypoint = read("ubuntu/entrypoint.sh")
 for token in ("TERMINAL_USER", "TERMINAL_PASSWORD", "HERMES_AUTOSTART", "ttyd", "/opt/data", "/data"):
     if token not in ubuntu_entrypoint:
         ERRORS.append(f"Missing Ubuntu terminal behavior: {token}")
+if ">(sed -u -E" not in ubuntu_entrypoint or "credential:[[:space:]]*" not in ubuntu_entrypoint or "[redacted]" not in ubuntu_entrypoint:
+    ERRORS.append("Ubuntu ttyd stderr must redact the encoded Basic Auth credential before it reaches deployment logs")
 
 for token in (
     "NousResearch/hermes-agent", "MIT License", "Web Dashboard",
