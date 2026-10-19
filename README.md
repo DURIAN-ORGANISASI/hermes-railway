@@ -51,14 +51,22 @@ Repo ini menyediakan tiga mode deployment yang dapat berjalan bersamaan sebagai 
 
 Mode default bila `DEPLOY_MODE` tidak diatur. Tambahkan di **Railway → service Dashboard → Variables**:
 
-    DEPLOY_MODE=dashboard
-    USERNAME=admin
-    PASSWORD=ganti-dengan-password-kuat-dan-unik
-    SECRET=ganti-dengan-secret-acak-minimal-32-karakter
+Salin blok variabel ini ke **Railway → Hermes-Dashboard → Variables**. Ganti seluruh nilai contoh sebelum menyimpan:
 
-- Gunakan password unik dan `SECRET` acak minimal 32 karakter. Contoh: `openssl rand -base64 32`.
+```dotenv
+DEPLOY_MODE=dashboard
+USERNAME=ganti_dengan_username
+PASSWORD=GANTI_DENGAN_PASSWORD_UNIK_YANG_KUAT
+SECRET=GANTI_DENGAN_SECRET_ACAK_MINIMAL_32_KARAKTER
+HERMES_HOME=/opt/data
+TZ=Asia/Jakarta
+PORT=8080
+```
+
+- `USERNAME` dan `PASSWORD` mengatur login Dashboard. `SECRET` wajib minimal 32 karakter; hasilkan dengan `openssl rand -hex 32` di terminal dan jangan gunakan nilai dari dokumentasi.
 - Pasang Railway Volume pada `/opt/data`.
-- Script memakai `PORT` jika tersedia; bila tidak, Dashboard memakai port `9119`. Target port Railway harus cocok.
+- `PORT=8080` dipakai pada konfigurasi domain Railway contoh di repo ini. Di **Settings → Networking**, pastikan target port domain sama dengan port aplikasi, yaitu `8080`. Jika port aplikasi diubah, samakan juga target domain.
+- Setelah kredensial disimpan, deploy/restart service dan cek **Deploy Logs** serta halaman login. Status deploy `SUCCESS` saja belum membuktikan HTTP bisa diakses.
 - Setelah akses diamankan, atur provider/model dan integrasi chat mengikuti dokumentasi resmi Hermes.
 
 > [!IMPORTANT]
@@ -68,19 +76,30 @@ Mode default bila `DEPLOY_MODE` tidak diatur. Tambahkan di **Railway → service
 
 Mode ini tidak menyalakan Dashboard. Tambahkan variabel di **Railway → service Variables → Variables**. Minimal satu API key provider harus diisi; provider lain boleh kosong atau tidak dibuat.
 
-    DEPLOY_MODE=variables
-    GROQ_API_KEY=
-    MISTRAL_API_KEY=
-    NVIDIA_API_KEY=
-    GEMINI_API_KEY=
-    GOOGLE_API_KEY=
-    TELEGRAM_BOT_TOKEN=
-    TELEGRAM_ALLOWED_USERS=
-    DISCORD_BOT_TOKEN=
-    DISCORD_ALLOWED_USERS=
-    DISCORD_ALLOWED_CHANNELS=
-    DISCORD_FREE_RESPONSE_CHANNELS=
-    DISCORD_AUTO_THREAD=false
+Salin blok lengkap ini ke **Railway → Hermes-Variables → Variables**. API key dan token yang tidak digunakan boleh dibiarkan kosong atau tidak dibuat:
+
+```dotenv
+DEPLOY_MODE=variables
+HERMES_HOME=/opt/data
+TZ=Asia/Jakarta
+
+GROQ_API_KEY=
+MISTRAL_API_KEY=
+NVIDIA_API_KEY=
+GEMINI_API_KEY=
+GOOGLE_API_KEY=
+
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_ALLOWED_USERS=
+
+DISCORD_BOT_TOKEN=
+DISCORD_ALLOWED_USERS=
+DISCORD_ALLOWED_CHANNELS=
+DISCORD_FREE_RESPONSE_CHANNELS=
+DISCORD_AUTO_THREAD=false
+```
+
+Wajib: isi minimal satu provider key yang valid. Nilai kosong di atas hanya placeholder, bukan kredensial aktif. Untuk bot, isi token dan allowlist yang benar-benar dibutuhkan.
 
 Contoh minimal untuk NVIDIA saja:
 
@@ -123,16 +142,39 @@ Mode ini menyediakan Ubuntu 26.04 dengan terminal browser `ttyd`, banner sistem,
 
 Variabel di **Railway → service Ubuntu → Variables**:
 
-    TERMINAL_USER=durianadmin
-    TERMINAL_PASSWORD=password-unik-minimal-16-karakter
-    HERMES_AUTOSTART=true
-    TZ=Asia/Jakarta
+Salin blok ini ke **Railway → Hermes-Ubuntu → Variables**. Ganti nilai contoh dengan kredensial baru:
 
-- Pada service Ubuntu, set variable service-scoped `RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile`. Biarkan Root Directory kosong agar build context tetap di root repo, lalu set restart policy `On Failure` dengan maksimal 10 retry.
-- Pasang Volume tersendiri di `/opt/data` untuk konfigurasi, sesi, memori, dan log Hermes. Pasang Volume lain di `/data` jika ingin file yang dibuat lewat terminal tetap tersimpan.
-- Setelah login ke terminal, jalankan `hermes setup` lalu `hermes gateway setup` sesuai provider dan kanal yang digunakan. Setelah `/opt/data/config.yaml` tersedia, `HERMES_AUTOSTART=true` (default) menghidupkan Gateway secara otomatis; set ke `false` untuk menonaktifkan auto-start.
-- Auto-start dan perintah `start-hermes` memakai lock bersama di `/opt/data/.gateway.lock`, sehingga wrapper menolak menjalankan Gateway kedua. Jika ingin menjalankan Gateway manual, set `HERMES_AUTOSTART=false` lalu restart service sebelum menjalankan `start-hermes`. Hindari menjalankan `hermes gateway run` langsung saat auto-start aktif karena perintah langsung melewati lock wrapper.
-- Domain service ini membuka shell Ubuntu dengan hak root di dalam container. Pakai password kuat, batasi akses domain, dan jangan menyimpan rahasia di GitHub.
+```dotenv
+RAILWAY_DOCKERFILE_PATH=/ubuntu/Dockerfile
+TERMINAL_USER=ganti_username_terminal
+TERMINAL_PASSWORD=GANTI_PASSWORD_ACAK_MINIMAL_16_KARAKTER
+HERMES_HOME=/opt/data
+HERMES_RUNTIME_DIR=/usr/local/share/hermes-tools
+UV_CACHE_DIR=/tmp/uv-cache
+HERMES_AUTOSTART=true
+TZ=Asia/Jakarta
+PORT=8080
+```
+
+- Pada service Ubuntu, set Dockerfile Path ke `ubuntu/Dockerfile` dan pastikan **Root Directory tetap kosong**, sehingga build context tetap root repository. `RAILWAY_DOCKERFILE_PATH` dicantumkan di template; pengaturan build Railway juga harus menunjuk ke path yang benar. Set restart policy `On Failure` dengan maksimal 10 retry.
+- `TERMINAL_USER` tidak boleh mengandung titik dua (`:`) dan `TERMINAL_PASSWORD` wajib minimal 16 karakter. Gunakan nilai acak unik.
+- Pasang Volume khusus service Ubuntu di `/opt/data` untuk konfigurasi, sesi/history, memori, dan log Hermes. `/data` adalah direktori file terminal; pasang Volume kedua yang berbeda di `/data` jika file buatan terminal harus bertahan sesudah redeploy. Jangan berbagi volume dengan service lain.
+- Buka domain terminal setelah deploy, login dengan kredensial tadi, lalu jalankan perintah setup berikut satu per satu:
+
+```bash
+hermes setup
+hermes gateway setup
+```
+
+Ikuti wizard untuk provider/model dan kanal chat. Pastikan konfigurasi dibuat:
+
+```bash
+test -f /opt/data/config.yaml && echo "Konfigurasi ditemukan" || echo "Setup belum selesai"
+```
+
+Setelah konfigurasi tersedia, restart service dari Railway. Dengan `HERMES_AUTOSTART=true`, entrypoint mencoba menghidupkan Gateway secara otomatis. Periksa Deploy Logs lalu uji dengan mengirim pesan pada bot Telegram/Discord yang dikonfigurasi.
+- Untuk menjalankan Gateway manual, set `HERMES_AUTOSTART=false`, restart service, lalu gunakan `start-hermes`. Jangan menjalankan Gateway kedua saat auto-start aktif; jangan menjalankan `hermes gateway run` langsung karena itu melewati lock wrapper.
+- **Keamanan penting:** shell berjalan sebagai root di dalam container. Log Railway sebelumnya menampilkan kredensial ttyd dalam bentuk Base64 (Base64 bukan enkripsi); jika kredensial pernah tercetak pada log, segera rotasi `TERMINAL_PASSWORD`, simpan, lalu redeploy. Jangan menyimpan rahasia di GitHub.
 
 > [!NOTE]
 > Railway telah mendepresiasi Config-as-Code (`railway.json`/`railway.toml`) untuk service baru dan menyatakan file lama berhenti dibaca pada 1 Desember 2026. File root dipertahankan demi kompatibilitas service lama; untuk service baru, atur build dan restart policy dari Settings Railway. Lihat [dokumentasi Railway](https://docs.railway.com/config-as-code).
