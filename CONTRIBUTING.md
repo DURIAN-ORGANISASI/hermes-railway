@@ -32,6 +32,8 @@ Thanks for improving Hermes Agent Railway. Keep changes focused, explain their p
 - [ ] Sources and license notes cover new third-party material.
 - [ ] Dashboard security implications are documented.
 - [ ] Ubuntu Dockerfile path variable, terminal authentication, and optional volume paths are validated.
+- [ ] Ubuntu auto-start and `start-hermes` share a Gateway lock; manual startup guidance is consistent.
+- [ ] Railway Watch Paths distinguish Dashboard, Variables, and Ubuntu build inputs.
 - [ ] Separate-volume guidance is consistent across all three modes.
 
 CI runs static checks only; it does not test a live Railway deployment or external provider accounts.
