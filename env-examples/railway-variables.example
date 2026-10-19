@@ -1,17 +1,21 @@
-# MODE RAILWAY VARIABLES — cukup isi SATU atau lebih API key provider.
+# MODE RAILWAY VARIABLES — masukkan ke Railway > Hermes-Variables > Variables.
+# Isi minimal satu provider key yang valid; provider lain boleh kosong/dihapus.
 DEPLOY_MODE=variables
+HERMES_HOME=/opt/data
+TZ=Asia/Jakarta
+
 GROQ_API_KEY=
 MISTRAL_API_KEY=
 NVIDIA_API_KEY=
 GEMINI_API_KEY=
-# Alias opsional Gemini, dipakai jika GEMINI_API_KEY kosong:
+# Alias Gemini opsional; dipakai jika GEMINI_API_KEY kosong.
 GOOGLE_API_KEY=
 
-# Telegram (opsional)
+# Telegram opsional
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_ALLOWED_USERS=
 
-# Discord (opsional)
+# Discord opsional
 DISCORD_BOT_TOKEN=
 DISCORD_ALLOWED_USERS=
 DISCORD_ALLOWED_CHANNELS=
