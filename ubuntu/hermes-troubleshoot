@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Quick diagnostics for "Telegram/Discord won't connect" on the Ubuntu Hermes
+# image. Run this first in the Railway terminal before changing anything —
+# it collects the same checks support usually asks for in one shot:
+# Gateway status, outbound connectivity, the relevant log lines, whether the
+# messaging adapters are actually installed, and a best-effort guess at the
+# fix based on known error patterns (401, 409, Discord intents, DNS).
+set -Eeuo pipefail
+
+HERMES_HOME="${HERMES_HOME:-/opt/data}"
+LOG_FILE="${HERMES_HOME}/logs/gateway.log"
+CONFIG_FILE="${HERMES_HOME}/config.yaml"
+
+bold() { printf '\033[1m%s\033[0m\n' "$1"; }
+
+bold "== Hermes Gateway troubleshoot =="
+echo
+
+if [[ ! -f "${CONFIG_FILE}" ]]; then
+  echo "config.yaml tidak ditemukan di ${CONFIG_FILE}."
+  echo "Jalankan 'hermes setup' dulu untuk konfigurasi provider dan messaging platform."
+  exit 0
+fi
+
+bold "[1/5] Status Gateway"
+hermes gateway status || echo "  (gagal membaca status Gateway — lihat log di bawah)"
+echo
+
+bold "[2/5] Konektivitas keluar ke Telegram dan Discord"
+for url in "https://api.telegram.org" "https://discord.com/api/v10/gateway"; do
+  if code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$url" 2>/dev/null)" && [[ -n "${code}" ]]; then
+    printf '  %-38s %s\n' "$url" "$code"
+  else
+    printf '  %-38s %s\n' "$url" "GAGAL"
+  fi
+done
+echo "  (kode 200/401/404 = jaringan OK, server merespons. GAGAL/000 = tidak bisa keluar ke internet sama sekali.)"
+echo
+
+bold "[3/5] Baris log Gateway yang relevan (200 baris terakhir)"
+if [[ -f "${LOG_FILE}" ]]; then
+  if ! tail -n 200 "${LOG_FILE}" | grep -iE 'telegram|discord|error|conflict|unauthorized|intent|timeout' | tail -n 20; then
+    echo "  (tidak ada baris relevan ditemukan)"
+  fi
+else
+  echo "  Log belum ada di ${LOG_FILE} (Gateway mungkin belum pernah start)."
+fi
+echo
+
+bold "[4/5] Adapter messaging terpasang? (hermes doctor)"
+doctor_output="$(hermes doctor 2>/dev/null || true)"
+if printf '%s' "${doctor_output}" | grep -qi 'python-telegram-bot'; then
+  printf '%s\n' "${doctor_output}" | grep -i 'python-telegram-bot'
+else
+  echo "  python-telegram-bot: TIDAK TERDETEKSI — adapter Telegram mungkin tidak terpasang di image ini."
+fi
+if printf '%s' "${doctor_output}" | grep -qi 'discord.py'; then
+  printf '%s\n' "${doctor_output}" | grep -i 'discord.py'
+else
+  echo "  discord.py: TIDAK TERDETEKSI — adapter Discord mungkin tidak terpasang di image ini."
+fi
+echo
+
+bold "[5/5] Saran berdasarkan pola error yang terdeteksi"
+found_suggestion=0
+recent_log="$(tail -n 200 "${LOG_FILE}" 2>/dev/null || true)"
+
+if printf '%s' "${recent_log}" | grep -qiE '409|conflict'; then
+  echo "  - Telegram 409/Conflict: token bot ini sedang dipakai di lebih dari satu tempat."
+  echo "    Matikan Gateway lain (service Railway lain, bot lokal) yang memakai token yang sama."
+  found_suggestion=1
+fi
+if printf '%s' "${recent_log}" | grep -qiE '401|unauthorized|invalid token'; then
+  echo "  - 401/Unauthorized: token salah atau sudah di-revoke."
+  echo "    Jalankan: hermes setup gateway   -> pilih platform -> tempel token baru."
+  found_suggestion=1
+fi
+if printf '%s' "${recent_log}" | grep -qiE 'intent'; then
+  echo "  - Discord intent error: aktifkan 'Message Content Intent' di"
+  echo "    https://discord.com/developers/applications -> aplikasimu -> Bot -> Privileged Gateway Intents."
+  found_suggestion=1
+fi
+if printf '%s' "${recent_log}" | grep -qiE 'timeout|dns|name or service not known|network is unreachable'; then
+  echo "  - Masalah jaringan/DNS: cek hasil [2/5] di atas. Kalau kode HTTP keduanya GAGAL,"
+  echo "    kemungkinan ada pembatasan outbound pada project Railway ini."
+  found_suggestion=1
+fi
+if printf '%s' "${recent_log}" | grep -qi 'no messaging platforms enabled'; then
+  echo "  - Gateway start sebelum messaging dikonfigurasi. Kalau config.yaml baru saja diubah,"
+  echo "    tunggu ~10 detik (config watcher auto-restart sejak commit terbaru repo) atau jalankan:"
+  echo "    hermes gateway status   -> catat PID -> kill <PID>   (supervisor akan restart otomatis)"
+  found_suggestion=1
+fi
+if [[ "${found_suggestion}" -eq 0 ]]; then
+  echo "  Tidak ada pola error umum yang cocok di log terbaru. Baca [1/5]-[4/5] di atas secara manual,"
+  echo "  atau salin outputnya (sembunyikan token/API key) untuk dibantu lebih lanjut."
+fi
+
+echo
+echo "Panduan lengkap: docs/PANDUAN-DEPLOY-RAILWAY.md (bagian C10/C10A/C10B) di repo DURIAN-ORGANISASI/hermes-railway."

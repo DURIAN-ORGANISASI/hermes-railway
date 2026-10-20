@@ -36,7 +36,8 @@ else
 fi
 
 if pgrep -af '[h]ermes gateway run' >/dev/null 2>&1; then
-  printf '%sHermes Gateway:%s %srunning%s\n\n' "$C_RED" "$C_RESET" "$C_GREEN" "$C_RESET"
+  printf '%sHermes Gateway:%s %srunning%s\n' "$C_RED" "$C_RESET" "$C_GREEN" "$C_RESET"
 else
-  printf '%sHermes Gateway:%s %snot running / setup needed%s\n\n' "$C_RED" "$C_RESET" "$C_ORANGE" "$C_RESET"
+  printf '%sHermes Gateway:%s %snot running / setup needed%s\n' "$C_RED" "$C_RESET" "$C_ORANGE" "$C_RESET"
 fi
+printf 'Telegram/Discord tidak membalas? Jalankan: %shermes-troubleshoot%s\n\n' "$C_GREEN" "$C_RESET"

@@ -74,8 +74,10 @@ RUN cd /usr/local/share/hermes-agent && \
 COPY ubuntu/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY ubuntu/system-banner.sh /etc/profile.d/00-system-banner.sh
 COPY ubuntu/start-hermes /usr/local/bin/start-hermes
+COPY ubuntu/hermes-troubleshoot /usr/local/bin/hermes-troubleshoot
 
 RUN chmod 0755 /usr/local/bin/entrypoint.sh /usr/local/bin/start-hermes /etc/profile.d/00-system-banner.sh \
+    /usr/local/bin/hermes-troubleshoot \
     && mkdir -p /data /opt/data /usr/local/share/hermes-tools \
     && chmod 0777 /data \
     && chmod 0755 /opt/data /usr/local/share/hermes-tools

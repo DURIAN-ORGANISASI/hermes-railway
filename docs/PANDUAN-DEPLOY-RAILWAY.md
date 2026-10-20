@@ -507,9 +507,11 @@ Jika muncul `Setup belum selesai`, jalankan kembali `hermes setup` dan tuntaskan
 
 🟡 Screenshot sebelumnya menunjukkan pesan bahwa setup Telegram terlihat selesai tetapi Gateway belum melaporkan koneksi. Dalam kondisi itu, periksa Deploy Logs; dengan `HERMES_AUTOSTART=true`, restart service sekali jika konfigurasi sudah ada. Jangan menjalankan Gateway manual bersamaan dengan auto-start.
 
-## C10. Jika Telegram tetap diam
+## C10. Jika Telegram atau Discord tetap diam / gagal terhubung
 
-Periksa urutan berikut:
+📋 **Cara tercepat:** jalankan `hermes-troubleshoot` di terminal browser Railway. Ini mengumpulkan semua pemeriksaan di bawah sekaligus — status Gateway, tes konektivitas keluar ke Telegram/Discord, baris log yang relevan, status adapter messaging (`hermes doctor`), dan saran otomatis berdasarkan pola error yang terdeteksi (401 Unauthorized, 409 Conflict, Discord intent, masalah DNS/jaringan, dsb). Command ini juga disebutkan di banner saat login terminal.
+
+Kalau ingin periksa manual satu per satu, urutannya:
 
 1. Pastikan file `/opt/data/config.yaml` ditemukan.
 2. Pastikan `HERMES_AUTOSTART=true`.
