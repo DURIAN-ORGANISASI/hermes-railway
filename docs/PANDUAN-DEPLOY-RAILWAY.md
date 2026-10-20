@@ -519,22 +519,28 @@ Periksa urutan berikut:
 6. Pastikan service lain tidak memakai token bot yang sama.
 7. Uji melalui DM terlebih dahulu, bukan grup.
 8. Jalankan `hermes doctor` di terminal dan cek baris `python-telegram-bot` di bagian **Required Packages** — harus ada tanda centang. Kalau tidak, image belum memasang adapter messaging dengan benar (lihat C10A).
-9. Kalau kamu baru saja menjalankan ulang `hermes setup` pada service yang Gateway-nya **sudah pernah jalan sebelumnya**, Gateway lama kemungkinan masih pakai config lama di memori — lihat C10A untuk cara memastikan Gateway reload.
+9. Kalau kamu baru saja menjalankan ulang `hermes setup`, tunggu ±10 detik — mulai commit ini, `entrypoint.sh` otomatis mendeteksi `config.yaml` berubah dan me-restart Gateway sendiri (lihat C10A). Kalau sampai lebih dari itu masih diam, baru lakukan restart manual.
 
 🔴 Jangan menjalankan `start-hermes` atau `hermes gateway run` ketika `HERMES_AUTOSTART=true` dan Gateway sudah dikelola otomatis.
 
-## C10A. Pelajaran penting: Gateway tidak otomatis reload config baru
+## C10A. Gateway sekarang auto-restart saat config berubah
 
 Kasus nyata yang pernah terjadi: setup Telegram sudah benar, adapter messaging sudah terpasang, tapi bot tetap diam. Penyebabnya Gateway yang **sudah berjalan sejak sebelum** `hermes setup` dijalankan ulang (misalnya setelah ganti token atau provider) tidak otomatis membaca ulang `config.yaml` — proses lama tetap jalan dengan config lama di memori.
 
-Cara memastikan Gateway benar-benar pakai config terbaru, di terminal browser Railway:
+**Ini sekarang sudah ditangani otomatis oleh `ubuntu/entrypoint.sh`.** Selain supervisor yang menjaga Gateway tetap hidup, ada *config watcher* yang berjalan di background: setiap 5 detik ia mengecek hash `config.yaml`, dan begitu berubah (habis `hermes setup` atau `hermes setup gateway` disimpan), ia otomatis menghentikan proses Gateway yang sedang berjalan secara bersih — supervisor langsung menjalankannya ulang dalam ~5 detik dengan config terbaru. Tidak perlu `kill` manual atau restart service dari Railway lagi untuk kasus ini. Log watcher ini muncul di Deploy Logs sebagai:
+
+```
+Gateway config watcher started in the background (PID ...) — the Gateway now restarts itself automatically whenever config.yaml changes.
+...
+Detected a change in /opt/data/config.yaml; restarting Hermes Gateway (PID ...) so it picks up the new configuration...
+```
+
+Kalau karena suatu alasan bot masih diam lebih dari ±15 detik setelah setup selesai (atau kamu pakai image lama dari sebelum fix ini), diagnosa manual tetap bisa dipakai:
 
 1. `hermes gateway status` — catat PID yang sedang aktif.
-2. `tail -n 100 /opt/data/logs/gateway.log` — kalau ada baris `No messaging platforms enabled`, itu tandanya Gateway proses tersebut start **sebelum** Telegram dikonfigurasi.
-3. `kill <PID>` (PID dari langkah 1) — dengan `HERMES_AUTOSTART=true`, supervisor otomatis di `entrypoint.sh` akan menjalankan ulang Gateway dalam ~5 detik memakai config terbaru. Ini aman: bukan `kill -9`, Gateway akan shutdown bersih lalu supervisor merestartnya.
-4. `hermes gateway status` lagi sampai muncul PID baru, lalu cek log sekali lagi — harus muncul `Connecting to telegram...` lalu `Cold boot: dropping Telegram updates...`. Itu tanda Telegram berhasil connect.
-
-🔴 Lakukan langkah ini setiap kali selesai mengubah konfigurasi messaging (`hermes setup` atau `hermes setup gateway`) pada service yang Gateway-nya sudah pernah berjalan — jangan hanya mengandalkan prompt "Restart the gateway to pick up changes?" di dalam wizard, karena restart itu bisa gagal diam-diam kalau lock Gateway sedang dipegang proses supervisor lain.
+2. `tail -n 100 /opt/data/logs/gateway.log` — kalau ada baris `No messaging platforms enabled`, Gateway start sebelum Telegram dikonfigurasi.
+3. `kill <PID>` (PID dari langkah 1) — supervisor otomatis akan menjalankan ulang Gateway dalam ~5 detik memakai config terbaru.
+4. `hermes gateway status` lagi sampai muncul PID baru, lalu cek log — harus muncul `Connecting to telegram...` lalu `Cold boot: dropping Telegram updates...`.
 
 ## C10B. Ringkasan perintah diagnostik cepat
 
@@ -543,8 +549,8 @@ Cara memastikan Gateway benar-benar pakai config terbaru, di terminal browser Ra
 | `test -f /opt/data/config.yaml && echo OK \|\| echo BELUM` | Cek apakah setup sudah pernah disimpan |
 | `hermes doctor` | Cek kesehatan instalasi — provider, adapter messaging, dependency |
 | `hermes gateway status` | Lihat apakah Gateway jalan dan PID-nya |
-| `tail -n 100 /opt/data/logs/gateway.log` | Baca log startup Gateway — cari status koneksi Telegram |
-| `kill <PID>` | Paksa Gateway restart supaya baca config terbaru (auto-restart via supervisor) |
+| `tail -n 100 /opt/data/logs/gateway.log` | Baca log startup Gateway — cari status koneksi Telegram dan log config watcher |
+| `kill <PID>` | Fallback manual kalau config watcher otomatis tidak sempat/gagal restart |
 | `hermes setup` | Jalankan ulang wizard lengkap kapan saja untuk ubah provider/model/messaging |
 | `hermes setup gateway` | Ubah konfigurasi messaging saja tanpa mengulang semua langkah |
 
@@ -573,7 +579,7 @@ Cara memastikan Gateway benar-benar pakai config terbaru, di terminal browser Ra
 | Model not found | Pilih model yang tersedia untuk API key-mu |
 | Telegram conflict / `getUpdates` | Matikan Gateway lain yang memakai token sama |
 | Telegram setup selesai, bot diam | Periksa Gateway di Deploy Logs, allowlist, token, dan provider |
-| Gateway jalan tapi `No messaging platforms enabled` di log | Gateway start sebelum Telegram dikonfigurasi — lihat C10A, `kill <PID>` lalu biarkan supervisor restart otomatis |
+| Gateway jalan tapi `No messaging platforms enabled` di log | Gateway start sebelum Telegram dikonfigurasi — tunggu ±10 detik (config watcher auto-restart), atau `kill <PID>` manual kalau belum ter-update ke fix ini — lihat C10A |
 | `hermes doctor` tidak menandai `python-telegram-bot` | Image belum memasang adapter messaging dengan benar — pastikan `ubuntu/Dockerfile` pakai `sync_venv(['all', 'messaging'], explicit=True)`, lalu build ulang |
 
 🔴 Jangan bagikan API key, token bot, password, isi konfigurasi, atau log yang masih memuat rahasia.

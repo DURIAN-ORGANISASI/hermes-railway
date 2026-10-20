@@ -151,6 +151,46 @@ if [[ "${HERMES_AUTOSTART:-true}" == "true" || "${HERMES_AUTOSTART:-true}" == "1
   ) &
   GATEWAY_SUPERVISOR_PID=$!
   echo "Hermes Gateway supervisor started in the background (PID ${GATEWAY_SUPERVISOR_PID})."
+
+  # A Gateway that was already running when config.yaml is rewritten (e.g. by
+  # re-running "hermes setup" or "hermes setup gateway" to change the model,
+  # provider or messaging platform) does NOT pick up the new file on its own —
+  # it keeps serving the config it loaded at its own startup. That left a real
+  # bot silently unreachable even though setup had completed successfully and
+  # the Gateway was reported as running. Watch config.yaml's content hash and
+  # force a clean restart through the lock above whenever it changes, so the
+  # supervisor loop immediately relaunches the Gateway with the fresh config —
+  # no manual "kill <PID>" or container restart needed after reconfiguring.
+  (
+    config_file="${HERMES_HOME}/config.yaml"
+    while [[ ! -f "${config_file}" ]]; do
+      sleep 5
+    done
+    last_hash="$(sha256sum "${config_file}" 2>/dev/null | awk '{print $1}')"
+    while true; do
+      sleep 5
+      [[ -f "${config_file}" ]] || continue
+      current_hash="$(sha256sum "${config_file}" 2>/dev/null | awk '{print $1}')"
+      [[ -n "${current_hash}" && "${current_hash}" != "${last_hash}" ]] || continue
+      last_hash="${current_hash}"
+      # The Gateway runs as flock's child (flock itself does not re-exec into
+      # it), so the process to signal is that child, not the flock PID itself —
+      # killing flock would leave the Gateway running on the stale config.
+      flock_pid="$(pgrep -x flock | head -n1 || true)"
+      gateway_pid=""
+      if [[ -n "${flock_pid}" ]]; then
+        gateway_pid="$(pgrep -P "${flock_pid}" | head -n1 || true)"
+      fi
+      if [[ -n "${gateway_pid}" ]]; then
+        echo "Detected a change in ${config_file}; restarting Hermes Gateway (PID ${gateway_pid}) so it picks up the new configuration..."
+        kill "${gateway_pid}" 2>/dev/null || true
+      else
+        echo "Detected a change in ${config_file}, but no running Gateway process was found to restart; the supervisor will pick up the new config on its next start." >&2
+      fi
+    done
+  ) &
+  CONFIG_WATCHER_PID=$!
+  echo "Gateway config watcher started in the background (PID ${CONFIG_WATCHER_PID}) — the Gateway now restarts itself automatically whenever config.yaml changes."
 else
   echo "Hermes Gateway auto-start is disabled (HERMES_AUTOSTART=${HERMES_AUTOSTART:-false})."
   echo "After setup, start manually with start-hermes."
