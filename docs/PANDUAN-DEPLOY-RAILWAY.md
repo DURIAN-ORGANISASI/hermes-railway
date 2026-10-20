@@ -233,6 +233,15 @@ Buka **Hermes-Ubuntu → Settings → Build**:
 
 🔴 Variabel `RAILWAY_DOCKERFILE_PATH` di bawah ini **tidak menggantikan pemeriksaan Dockerfile Path pada Settings**. Pastikan keduanya sesuai.
 
+🧰 **Kalau men-deploy dari fork/salinan repo ini**, sebelum build periksa dulu baris instalasi adapter messaging di `ubuntu/Dockerfile` (dekat komentar "Telegram and Discord are optional Hermes extras"). Versi yang benar memakai:
+
+```dockerfile
+RUN cd /usr/local/share/hermes-agent && \
+    python3 -c "from pm import sync_venv; sync_venv(['all', 'messaging'], explicit=True)"
+```
+
+Bukan `hermes pm install --extra all --extra messaging` — perintah itu tidak valid (`hermes pm install` tidak punya flag `--extra`) dan menyebabkan adapter Telegram/Discord tidak terpasang walau build terlihat sukses, sehingga bot tidak pernah bisa membalas. Repo resmi `DURIAN-ORGANISASI/hermes-railway` branch `main` (commit `b511baa` ke atas) sudah memakai versi yang benar.
+
 ## C2. Isi Variables
 
 Buka **Hermes-Ubuntu → Variables**, lalu tempel blok berikut. Ganti username dan password contoh.
@@ -509,8 +518,35 @@ Periksa urutan berikut:
 5. Pastikan token Telegram benar dan ID pengguna masuk allowlist.
 6. Pastikan service lain tidak memakai token bot yang sama.
 7. Uji melalui DM terlebih dahulu, bukan grup.
+8. Jalankan `hermes doctor` di terminal dan cek baris `python-telegram-bot` di bagian **Required Packages** — harus ada tanda centang. Kalau tidak, image belum memasang adapter messaging dengan benar (lihat C10A).
+9. Kalau kamu baru saja menjalankan ulang `hermes setup` pada service yang Gateway-nya **sudah pernah jalan sebelumnya**, Gateway lama kemungkinan masih pakai config lama di memori — lihat C10A untuk cara memastikan Gateway reload.
 
 🔴 Jangan menjalankan `start-hermes` atau `hermes gateway run` ketika `HERMES_AUTOSTART=true` dan Gateway sudah dikelola otomatis.
+
+## C10A. Pelajaran penting: Gateway tidak otomatis reload config baru
+
+Kasus nyata yang pernah terjadi: setup Telegram sudah benar, adapter messaging sudah terpasang, tapi bot tetap diam. Penyebabnya Gateway yang **sudah berjalan sejak sebelum** `hermes setup` dijalankan ulang (misalnya setelah ganti token atau provider) tidak otomatis membaca ulang `config.yaml` — proses lama tetap jalan dengan config lama di memori.
+
+Cara memastikan Gateway benar-benar pakai config terbaru, di terminal browser Railway:
+
+1. `hermes gateway status` — catat PID yang sedang aktif.
+2. `tail -n 100 /opt/data/logs/gateway.log` — kalau ada baris `No messaging platforms enabled`, itu tandanya Gateway proses tersebut start **sebelum** Telegram dikonfigurasi.
+3. `kill <PID>` (PID dari langkah 1) — dengan `HERMES_AUTOSTART=true`, supervisor otomatis di `entrypoint.sh` akan menjalankan ulang Gateway dalam ~5 detik memakai config terbaru. Ini aman: bukan `kill -9`, Gateway akan shutdown bersih lalu supervisor merestartnya.
+4. `hermes gateway status` lagi sampai muncul PID baru, lalu cek log sekali lagi — harus muncul `Connecting to telegram...` lalu `Cold boot: dropping Telegram updates...`. Itu tanda Telegram berhasil connect.
+
+🔴 Lakukan langkah ini setiap kali selesai mengubah konfigurasi messaging (`hermes setup` atau `hermes setup gateway`) pada service yang Gateway-nya sudah pernah berjalan — jangan hanya mengandalkan prompt "Restart the gateway to pick up changes?" di dalam wizard, karena restart itu bisa gagal diam-diam kalau lock Gateway sedang dipegang proses supervisor lain.
+
+## C10B. Ringkasan perintah diagnostik cepat
+
+| Perintah | Fungsinya |
+|---|---|
+| `test -f /opt/data/config.yaml && echo OK \|\| echo BELUM` | Cek apakah setup sudah pernah disimpan |
+| `hermes doctor` | Cek kesehatan instalasi — provider, adapter messaging, dependency |
+| `hermes gateway status` | Lihat apakah Gateway jalan dan PID-nya |
+| `tail -n 100 /opt/data/logs/gateway.log` | Baca log startup Gateway — cari status koneksi Telegram |
+| `kill <PID>` | Paksa Gateway restart supaya baca config terbaru (auto-restart via supervisor) |
+| `hermes setup` | Jalankan ulang wizard lengkap kapan saja untuk ubah provider/model/messaging |
+| `hermes setup gateway` | Ubah konfigurasi messaging saja tanpa mengulang semua langkah |
 
 ---
 
@@ -537,6 +573,8 @@ Periksa urutan berikut:
 | Model not found | Pilih model yang tersedia untuk API key-mu |
 | Telegram conflict / `getUpdates` | Matikan Gateway lain yang memakai token sama |
 | Telegram setup selesai, bot diam | Periksa Gateway di Deploy Logs, allowlist, token, dan provider |
+| Gateway jalan tapi `No messaging platforms enabled` di log | Gateway start sebelum Telegram dikonfigurasi — lihat C10A, `kill <PID>` lalu biarkan supervisor restart otomatis |
+| `hermes doctor` tidak menandai `python-telegram-bot` | Image belum memasang adapter messaging dengan benar — pastikan `ubuntu/Dockerfile` pakai `sync_venv(['all', 'messaging'], explicit=True)`, lalu build ulang |
 
 🔴 Jangan bagikan API key, token bot, password, isi konfigurasi, atau log yang masih memuat rahasia.
 
