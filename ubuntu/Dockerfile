@@ -1,6 +1,8 @@
 FROM ubuntu:26.04
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TTYD_VERSION=1.7.7
+# Keep in sync with the upstream image tag in the root Dockerfile.
+ARG HERMES_VERSION=0.23.1
 ARG TARGETARCH
 
 # Keep Hermes package-manager runtimes outside HERMES_HOME. Railway's /opt/data
@@ -48,15 +50,11 @@ RUN set -eux; \
     ln -s "${HERMES_RUNTIME_DIR}/cache/uv" "${HERMES_HOME}/cache/uv"; \
     ln -s "${HERMES_RUNTIME_DIR}/cache/partials" "${HERMES_HOME}/cache/partials"; \
     ln -s "${HERMES_RUNTIME_DIR}/tools" "${HERMES_HOME}/tools"; \
-    if ! curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
-      https://hermes-agent.nousresearch.com/install.sh -o /tmp/install-hermes.sh; then \
-      echo "Primary Hermes installer unavailable; retrying from the official GitHub source."; \
-      curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
-        https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh -o /tmp/install-hermes.sh; \
-    fi; \
+    curl -fsSL --retry 8 --retry-all-errors --retry-delay 5 --retry-max-time 240 --connect-timeout 20 --max-time 180 \
+      "https://raw.githubusercontent.com/NousResearch/hermes-agent/v${HERMES_VERSION}/scripts/install.sh" -o /tmp/install-hermes.sh; \
     test -s /tmp/install-hermes.sh; \
     head -n 1 /tmp/install-hermes.sh | grep -Eq "^#!/(usr/bin/env bash|bin/bash|usr/bin/env sh|bin/sh)$"; \
-    bash /tmp/install-hermes.sh --dir /usr/local/share/hermes-agent --hermes-home "${HERMES_HOME}" --non-interactive --skip-browser; \
+    bash /tmp/install-hermes.sh --branch "v${HERMES_VERSION}" --dir /usr/local/share/hermes-agent --hermes-home "${HERMES_HOME}" --non-interactive --skip-browser; \
     rm -f /tmp/install-hermes.sh; \
     command -v hermes
 

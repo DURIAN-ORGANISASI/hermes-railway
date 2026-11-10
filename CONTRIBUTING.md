@@ -19,6 +19,7 @@ Thanks for improving Hermes Agent Railway. Keep changes focused, explain their p
     sh -n railway-entrypoint.sh
     sh -n dashboard-entrypoint.sh
     sh -n variables/railway-entrypoint.sh
+    sh -n variables/generate-config.sh
     bash -n ubuntu/entrypoint.sh
     bash -n ubuntu/start-hermes
     bash -n ubuntu/system-banner.sh
@@ -31,9 +32,15 @@ Thanks for improving Hermes Agent Railway. Keep changes focused, explain their p
 - [ ] Local links, SVGs, JSON, and shell syntax pass validation.
 - [ ] Sources and license notes cover new third-party material.
 - [ ] Dashboard security implications are documented.
+- [ ] Root and Ubuntu images use the same pinned Hermes release.
+- [ ] Variables-mode model overrides are validated and documented.
+- [ ] Railway IaC migration instructions preserve all three existing services.
 - [ ] Ubuntu Dockerfile path variable, terminal authentication, and optional volume paths are validated.
 - [ ] Ubuntu auto-start and `start-hermes` share a Gateway lock; manual startup guidance is consistent.
 - [ ] Railway Watch Paths distinguish Dashboard, Variables, and Ubuntu build inputs.
 - [ ] Separate-volume guidance is consistent across all three modes.
 
 CI runs static checks only; it does not test a live Railway deployment or external provider accounts.
+
+
+When upgrading Hermes Agent, verify the upstream release first and update both `Dockerfile` and `ubuntu/Dockerfile` in the same change. Do not replace the pinned tag with `latest` or an unreviewed `main` installer URL.

@@ -12,6 +12,7 @@ ERRORS: list[str] = []
 REQUIRED = [
     ".gitignore", "CONTRIBUTING.md", "Dockerfile", "LICENSE",
     "README.md", "README.en.md", "SECURITY.md", "railway.json",
+    "docs/RAILWAY-IAC-MIGRATION.md",
     "railway-entrypoint.sh", "dashboard-entrypoint.sh",
     "variables/README.md", "variables/railway-entrypoint.sh",
     "variables/generate-config.sh",
@@ -43,8 +44,12 @@ try:
 except (json.JSONDecodeError, OSError) as exc:
     ERRORS.append(f"Invalid railway.json: {exc}")
 
-if not re.search(r"(?m)^FROM\s+nousresearch/hermes-agent:latest\s*$", read("Dockerfile")):
-    ERRORS.append("Upstream image tag changed; update source/version notes")
+HERMES_VERSION = "0.23.1"
+if f"FROM nousresearch/hermes-agent:v{HERMES_VERSION}" not in read("Dockerfile"):
+    ERRORS.append("Root Dockerfile must pin the approved Hermes Agent release")
+ubuntu_version_match = re.search(r"(?m)^ARG HERMES_VERSION=(\S+)$", read("ubuntu/Dockerfile"))
+if not ubuntu_version_match or ubuntu_version_match.group(1) != HERMES_VERSION:
+    ERRORS.append("Ubuntu Dockerfile Hermes version must match the root Dockerfile pin")
 if "COPY variables/generate-config.sh /usr/local/bin/hermes-railway-generate-config.sh" not in read("Dockerfile"):
     ERRORS.append("Root Dockerfile must install the Variables-mode config generator")
 
@@ -69,7 +74,8 @@ for token in (
     "GEMINI_API_KEY", "GOOGLE_API_KEY",
     "openai/gpt-oss-20b", "ministral-3b-latest",
     "nvidia/nemotron-3.5-super-vl-120b-a12b", "gemini-3.8-flash",
-    "fallback_providers:", "config.yaml", "No provider API key found",
+    "GROQ_MODEL", "MISTRAL_MODEL", "NVIDIA_MODEL", "GEMINI_MODEL",
+    "validate_model_id", "fallback_providers:", "config.yaml", "No provider API key found",
 ):
     if token not in variables_generator:
         ERRORS.append(f"Missing Variables-mode behavior: {token}")
@@ -105,8 +111,9 @@ for relative in ("README.md", "README.en.md"):
 
 ubuntu_dockerfile = read("ubuntu/Dockerfile")
 for token in (
-    "FROM ubuntu:26.04", "ttyd", "hermes-agent.nousresearch.com/install.sh",
-    "raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh",
+    "FROM ubuntu:26.04", "ttyd",
+    "raw.githubusercontent.com/NousResearch/hermes-agent/v${HERMES_VERSION}/scripts/install.sh",
+    '--branch "v${HERMES_VERSION}"',
     "HERMES_HOME=/opt/data", "--retry 8", "--retry-all-errors",
     "--retry-max-time 240", "Acquire::Retries=5", "test -s /tmp/install-hermes.sh",
     "sync_venv(['all', 'messaging'], explicit=True)",
@@ -164,7 +171,8 @@ for relative in ("env-examples/dashboard.railway.example", "env-examples/railway
 
 test_source = read("scripts/test_deploy_modes.py")
 for token in ("test_missing_and_whitespace_keys", "test_single_provider_configurations",
-              "test_provider_priority_and_fallback_order", "google-alias-test-secret"):
+              "test_provider_priority_and_fallback_order", "test_model_override_is_applied",
+              "test_unsafe_model_id_is_rejected", "google-alias-test-secret"):
     if token not in test_source:
         ERRORS.append(f"Missing Variables-mode smoke test: {token}")
 
@@ -174,5 +182,5 @@ if ERRORS:
         print(f"- {error}")
     sys.exit(1)
 
-print("Validation OK: Dashboard, Variables, Ubuntu mode assets, atomic provider config, per-service Dockerfile selection, storage isolation, security warning, and source attribution are present.")
+print("Validation OK: three deployment modes, pinned Hermes release parity, safe model overrides, atomic provider config, storage isolation, Railway IaC migration notes, security guidance, and source attribution are present.")
 print("Static validation only; runtime/provider access still requires real Railway secrets.")

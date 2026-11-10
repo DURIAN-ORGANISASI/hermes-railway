@@ -1,5 +1,6 @@
 # Single Railway image with a startup mode switch: dashboard (default) or variables.
-FROM nousresearch/hermes-agent:latest
+# Keep Dashboard and Variables aligned with the pinned Ubuntu CLI release.
+FROM nousresearch/hermes-agent:v0.23.1
 
 USER root
 COPY railway-entrypoint.sh /usr/local/bin/hermes-railway-entrypoint.sh

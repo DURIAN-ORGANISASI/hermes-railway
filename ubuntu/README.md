@@ -279,6 +279,8 @@ Bagian ini khusus untuk mode **Ubuntu Terminal** pada repo ini. Anda tidak perlu
 
 Mode ini **bukan** Dashboard web Hermes dan bukan VPS Ubuntu penuh dengan systemd. Container menggunakan ttyd serta entrypoint repo untuk terminal dan auto-start Gateway. Dockerfile Ubuntu juga memasang extra `messaging` ke managed Hermes environment pada waktu build, sehingga adapter Telegram/Discord tersedia setelah redeploy; jangan mengandalkan pemasangan dependensi hanya pada filesystem runtime container.
 
+Versi Hermes CLI pada Ubuntu Terminal dipatok melalui `ARG HERMES_VERSION=0.23.1` dan diunduh dari tag upstream yang sama dengan image Dashboard/Variables di Dockerfile root. Saat memperbarui Hermes, ubah kedua pin versi bersama-sama dan biarkan CI membangun kedua image sebelum deploy.
+
 ## B1. ⚙️ Buat service Railway
 
 1. Hubungkan service baru ke DURIAN-ORGANISASI/hermes-railway, branch main.

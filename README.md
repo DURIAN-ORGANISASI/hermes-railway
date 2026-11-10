@@ -11,7 +11,7 @@
 <p><strong>Jalankan Hermes Agent di Railway.</strong><br>
 Tersedia tiga mode: Dashboard, Railway Variables, dan Ubuntu Terminal.</p>
 
-<p><a href="docs/PANDUAN-DEPLOY-RAILWAY.md">📘 Panduan deploy dari awal sampai berhasil</a> · <a href="#fitur">Fitur</a> · <a href="#pilih-mode">Mode deployment</a> · <a href="#deploy-ke-railway">Deploy</a> · <a href="#keamanan-dashboard">Keamanan</a> · <a href="#sumber-atribusi-dan-lisensi">Sumber &amp; lisensi</a></p>
+<p><a href="docs/PANDUAN-DEPLOY-RAILWAY.md">📘 Panduan deploy dari awal sampai berhasil</a> · <a href="docs/RAILWAY-IAC-MIGRATION.md">Migrasi Railway IaC</a> · <a href="#fitur">Fitur</a> · <a href="#pilih-mode">Mode deployment</a> · <a href="#deploy-ke-railway">Deploy</a> · <a href="#keamanan-dashboard">Keamanan</a> · <a href="#sumber-atribusi-dan-lisensi">Sumber &amp; lisensi</a></p>
 
 </div>
 
@@ -91,6 +91,12 @@ NVIDIA_API_KEY=
 GEMINI_API_KEY=
 GOOGLE_API_KEY=
 
+# Override model opsional; kosong = gunakan default di bawah
+GROQ_MODEL=
+MISTRAL_MODEL=
+NVIDIA_MODEL=
+GEMINI_MODEL=
+
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_ALLOWED_USERS=
 
@@ -112,14 +118,14 @@ Contoh minimal untuk NVIDIA saja:
 
 #### Urutan provider dan model startup
 
-| Prioritas | Variabel | Model default startup |
-| ---: | --- | --- |
-| 1 | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
-| 2 | `MISTRAL_API_KEY` | `ministral-3b-latest` |
-| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
-| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-3.8-flash` |
+| Prioritas | Provider key | Model default startup | Override opsional |
+| ---: | --- | --- | --- |
+| 1 | `GROQ_API_KEY` | `openai/gpt-oss-20b` | `GROQ_MODEL` |
+| 2 | `MISTRAL_API_KEY` | `ministral-3b-latest` | `MISTRAL_MODEL` |
+| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3.5-super-vl-120b-a12b` | `NVIDIA_MODEL` |
+| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-3.8-flash` | `GEMINI_MODEL` |
 
-Model ID default diperiksa pada 18 Oktober 2026 berdasarkan dokumentasi penyedia. Harga, kuota, dan ketersediaan bisa berubah; periksa akses model di akun provider sebelum deploy. Fallback hanya berlaku pada jenis error yang didukung Hermes/provider; tidak semua limit atau error autentikasi dialihkan otomatis.
+Model di atas adalah preset awal, bukan jaminan ketersediaan. ID model, akses akun, harga, dan kuota dapat berubah. Gunakan variabel override bila model default tidak tersedia; pilih ID yang didukung provider dan akunmu. Generator memvalidasi karakter ID model sebelum membuat YAML. Fallback hanya berlaku pada jenis error yang didukung Hermes/provider; tidak semua limit atau error autentikasi dialihkan otomatis.
 
 > [!NOTE]
 > Mode Variables membuat ulang `/opt/data/config.yaml` setiap startup dari API key aktif. Jadikan Railway Variables sebagai sumber konfigurasi; edit manual file yang dihasilkan dapat tertimpa.
@@ -180,7 +186,7 @@ Image Ubuntu repo ini memasang dependensi messaging Hermes (adapter Telegram/Dis
 - **Keamanan penting:** shell berjalan sebagai root di dalam container. Log Railway sebelumnya menampilkan kredensial ttyd dalam bentuk Base64 (Base64 bukan enkripsi); jika kredensial pernah tercetak pada log, segera rotasi `TERMINAL_PASSWORD`, simpan, lalu redeploy. Jangan menyimpan rahasia di GitHub.
 
 > [!NOTE]
-> Railway telah mendepresiasi Config-as-Code (`railway.json`/`railway.toml`) untuk service baru dan menyatakan file lama berhenti dibaca pada 1 Desember 2026. File root dipertahankan demi kompatibilitas service lama; untuk service baru, atur build dan restart policy dari Settings Railway. Lihat [dokumentasi Railway](https://docs.railway.com/config-as-code).
+> Railway menghentikan pembacaan Config-as-Code (`railway.json`/`railway.toml`) pada **1 Desember 2026**; service baru tidak dapat memakai format lama. File `railway.json` di repo ini dipertahankan sementara untuk kompatibilitas service lama. Railway Infrastructure as Code menggunakan `.railway/railway.ts`; karena repo ini memiliki tiga service dengan pengaturan berbeda, ikuti [panduan migrasi aman](docs/RAILWAY-IAC-MIGRATION.md) dan tinjau rencana sebelum menerapkan perubahan.
 
 
 ## Tutorial Ubuntu Railway: dari awal sampai bot membalas
@@ -305,7 +311,7 @@ Baru sekarang buka chat Telegram dengan bot:
 | Masalah | Tindakan |
 |---|---|
 | Domain tidak terbuka | Periksa domain, port 8080, dan status service. |
-| `config.yaml` tidak ditemukan | Selesaikan `hermes setup`; pastikan `HERMES_HOME=/opt/data). |
+| `config.yaml` tidak ditemukan | Selesaikan `hermes setup`; pastikan `HERMES_HOME=/opt/data`. |
 | API error 401 | Periksa API key dan provider. |
 | Error 429 / quota | Periksa kuota provider. |
 | Model tidak ditemukan | Pilih model yang tersedia di akun provider. |
@@ -355,7 +361,7 @@ Watch Paths perlu diatur **pada Settings masing-masing Railway service**; daftar
 /railway.json
 ```
 
-Pola memakai sintaks gitignore-style Railway. `railway.json` sengaja dicantumkan di ketiga service karena konfigurasi root tersebut dapat memengaruhi semuanya. Perubahan dokumentasi saja tidak perlu membangun ulang container. Jika kelak menambahkan file root yang dipakai saat build, masukkan path itu ke Watch Paths service yang relevan. Lihat [dokumentasi Watch Paths Railway](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
+Pola memakai sintaks gitignore-style Railway. `railway.json` masih dicantumkan di ketiga service untuk kompatibilitas sementara pada project yang belum bermigrasi. Setelah migrasi IaC selesai dan file lama tidak lagi digunakan, hapus pola `/railway.json` dari Watch Paths. Perubahan dokumentasi saja tidak perlu membangun ulang container. Perubahan `.railway/railway.ts` harus diterapkan melalui alur plan/apply Railway CLI, bukan dianggap sebagai build source otomatis. Lihat [dokumentasi Watch Paths Railway](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
 
 ## Arsitektur dan struktur repo
 
@@ -363,7 +369,7 @@ Pola memakai sintaks gitignore-style Railway. `railway.json` sengaja dicantumkan
 
 | Path | Fungsi |
 | --- | --- |
-| `Dockerfile`, `railway.json` | Build image dan konfigurasi Railway. |
+| `Dockerfile`, `railway.json` | Build image; `railway.json` hanya konfigurasi legacy sampai migrasi IaC selesai. |
 | `railway-entrypoint.sh` | Memilih mode startup. |
 | `dashboard-entrypoint.sh` | Memvalidasi kredensial dan menyiapkan Dashboard. |
 | `variables/railway-entrypoint.sh` | Membuat konfigurasi provider/fallback. |
@@ -382,7 +388,7 @@ Pola memakai sintaks gitignore-style Railway. `railway.json` sengaja dicantumkan
 - Simpan password, API key, token bot, dan `SECRET` di Railway Variables, bukan di kode, README, screenshot, atau log publik.
 - `SECRET` menandatangani sesi. Gunakan nilai acak yang kuat dan stabil antar-redeploy; rotasi jika bocor.
 - Pastikan Volume `/opt/data` terpasang, batasi siapa yang dapat membaca/mengubah Variables, dan backup data penting.
-- Dockerfile memakai upstream tag `latest`. Build ulang bisa mengambil versi Hermes berbeda; untuk deployment produksi yang reproducible, pin versi atau digest yang sudah diuji.
+- Dashboard/Variables dan Ubuntu saat ini sama-sama dipatok ke Hermes Agent `v0.23.1`. Saat memperbarui, ubah tag pada `Dockerfile` dan `ARG HERMES_VERSION` di `ubuntu/Dockerfile` ke rilis yang sama, lalu periksa CI sebelum deploy.
 - Pantau biaya API model dan izin bot.
 
 ## Troubleshooting

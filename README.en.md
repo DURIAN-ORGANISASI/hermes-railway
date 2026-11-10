@@ -11,7 +11,7 @@
 <p><strong>Run Hermes Agent on Railway.</strong><br>
 Three modes are available: Dashboard, Railway Variables, and Ubuntu Terminal.</p>
 
-<p><a href="#features">Features</a> · <a href="#choose-a-mode">Deployment modes</a> · <a href="#deploy-to-railway">Deploy</a> · <a href="#dashboard-security">Security</a> · <a href="#sources-attribution-and-licensing">Sources &amp; license</a></p>
+<p><a href="docs/PANDUAN-DEPLOY-RAILWAY.md">📘 Deployment guide</a> · <a href="docs/RAILWAY-IAC-MIGRATION.md">Railway IaC migration</a> · <a href="#features">Features</a> · <a href="#deploy-to-railway">Deploy</a> · <a href="#dashboard-security">Security</a> · <a href="#sources-attribution-and-licensing">Sources &amp; license</a></p>
 
 </div>
 
@@ -89,6 +89,12 @@ NVIDIA_API_KEY=
 GEMINI_API_KEY=
 GOOGLE_API_KEY=
 
+# Optional model overrides; blank = use the defaults below
+GROQ_MODEL=
+MISTRAL_MODEL=
+NVIDIA_MODEL=
+GEMINI_MODEL=
+
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_ALLOWED_USERS=
 
@@ -110,14 +116,14 @@ Minimal NVIDIA-only setup:
 
 #### Provider order and startup models
 
-| Priority | Variable | Default startup model |
-| ---: | --- | --- |
-| 1 | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
-| 2 | `MISTRAL_API_KEY` | `ministral-3b-latest` |
-| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
-| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-3.8-flash` |
+| Priority | Provider key | Default startup model | Optional override |
+| ---: | --- | --- | --- |
+| 1 | `GROQ_API_KEY` | `openai/gpt-oss-20b` | `GROQ_MODEL` |
+| 2 | `MISTRAL_API_KEY` | `ministral-3b-latest` | `MISTRAL_MODEL` |
+| 3 | `NVIDIA_API_KEY` | `nvidia/nemotron-3.5-super-vl-120b-a12b` | `NVIDIA_MODEL` |
+| 4 | `GEMINI_API_KEY` / `GOOGLE_API_KEY` | `gemini-3.8-flash` | `GEMINI_MODEL` |
 
-Default model IDs were reviewed against provider documentation on October 18, 2026. Pricing, quotas, and availability can change; verify model access in your provider account before deploying. Fallbacks only apply to failure types supported by Hermes/provider; not every quota or authentication error will be rerouted.
+These model IDs are starting presets, not availability guarantees. Model catalogs, account access, prices, and quotas change. Use the override variable when a preset is unavailable and choose an ID supported by your provider/account. The generator validates model-ID characters before writing YAML. Fallbacks apply only to failure types supported by Hermes/provider; not every quota or authentication error is rerouted.
 
 > [!NOTE]
 > Variables mode regenerates `/opt/data/config.yaml` at startup from active API keys. Treat Railway Variables as the source of truth rather than manually editing the generated file.
@@ -177,7 +183,7 @@ After config exists, restart the service in Railway. With `HERMES_AUTOSTART=true
 - **Important security note:** the shell runs as root inside the container. Railway logs may display ttyd credentials in Base64 form (Base64 is not encryption); if credentials ever appeared in logs, immediately rotate `TERMINAL_PASSWORD` in Railway Variables and redeploy. Do not commit secrets to GitHub.
 
 > [!NOTE]
-> Railway has deprecated Config-as-Code (`railway.json`/`railway.toml`) for new services and says existing files stop being read on December 1, 2026. The root file is retained for compatibility with existing services; configure build and restart policies in Railway Settings for new services. See [Railway documentation](https://docs.railway.com/config-as-code).
+> Railway will stop reading Config-as-Code (`railway.json`/`railway.toml`) on **December 1, 2026**; new services cannot use the legacy format. This repository retains `railway.json` temporarily for existing-service compatibility. Railway Infrastructure as Code uses `.railway/railway.ts`. Because this repository has three services with different settings, follow the [safe migration guide](docs/RAILWAY-IAC-MIGRATION.md) and review the plan before applying changes.
 
 ## Deploy to Railway
 
@@ -218,7 +224,7 @@ Configure Watch Paths in **each Railway service's Settings**; a single shared `r
 /railway.json
 ```
 
-Railway uses gitignore-style patterns. `railway.json` is intentionally included for all three services because its root configuration can affect each one. Documentation-only changes do not need to rebuild containers. If you add a root-level file used during a build, add its path to the relevant service's Watch Paths. See [Railway Watch Paths documentation](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
+Railway uses gitignore-style patterns. `railway.json` remains included for all three services only while a project still relies on the legacy file. After a successful IaC migration, remove `/railway.json` from Watch Paths. Documentation-only changes do not need to rebuild containers. Changes to `.railway/railway.ts` must be applied through Railway CLI plan/apply; they are not ordinary application build inputs. See [Railway Watch Paths documentation](https://docs.railway.com/builds/build-configuration#configure-watch-paths).
 
 ## Architecture and repository layout
 
@@ -226,7 +232,7 @@ Railway uses gitignore-style patterns. `railway.json` is intentionally included 
 
 | Path | Purpose |
 | --- | --- |
-| `Dockerfile`, `railway.json` | Image build and Railway configuration. |
+| `Dockerfile`, `railway.json` | Image build; `railway.json` is legacy configuration until IaC migration is complete. |
 | `railway-entrypoint.sh` | Selects the startup mode. |
 | `dashboard-entrypoint.sh` | Validates credentials and starts Dashboard. |
 | `variables/railway-entrypoint.sh` | Generates provider/fallback configuration. |
@@ -245,7 +251,7 @@ Railway uses gitignore-style patterns. `railway.json` is intentionally included 
 - Keep passwords, API keys, bot tokens, and `SECRET` in Railway Variables—not in code, README files, screenshots, or public logs.
 - `SECRET` signs sessions. Use a strong random value and keep it stable across redeploys; rotate it if compromised.
 - Ensure the `/opt/data` Volume is mounted, restrict access to Variables, and back up important data.
-- The Dockerfile uses upstream `latest`. Rebuilds may pull a different version; pin a tested version or digest for reproducible production deployments.
+- Dashboard/Variables and Ubuntu are both pinned to Hermes Agent `v0.23.1`. For an upgrade, change the root Dockerfile tag and `ARG HERMES_VERSION` in `ubuntu/Dockerfile` to the same release, then pass CI before deploying.
 - Monitor provider API costs and bot permissions.
 
 ## Troubleshooting

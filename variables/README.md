@@ -18,14 +18,14 @@ At least one provider API key is required. Set `DEPLOY_MODE=variables`; Dashboar
 
 The first non-empty key becomes the startup provider; other active keys are configured as fallbacks.
 
-| Provider | Startup model |
-| --- | --- |
-| Groq | `openai/gpt-oss-20b` |
-| Mistral | `ministral-3b-latest` |
-| NVIDIA | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
-| Gemini | `gemini-3.8-flash` |
+| Provider | Startup model | Optional override variable |
+| --- | --- | --- |
+| Groq | `openai/gpt-oss-20b` | `GROQ_MODEL` |
+| Mistral | `ministral-3b-latest` | `MISTRAL_MODEL` |
+| NVIDIA | `nvidia/nemotron-3.5-super-vl-120b-a12b` | `NVIDIA_MODEL` |
+| Gemini | `gemini-3.8-flash` | `GEMINI_MODEL` |
 
-Model availability, pricing, quotas, and provider support may change. Verify them before deployment.
+Set an override only when the model ID is available to your provider account. Model catalogs, account access, pricing, and quotas can change; verify before deployment. The generator accepts only letters, digits, dot, underscore, colon, slash, and hyphen in model IDs to prevent invalid YAML. Empty override values keep the defaults.
 
 ## Persistence and security
 

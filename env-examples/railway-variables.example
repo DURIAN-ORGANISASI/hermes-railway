@@ -11,6 +11,12 @@ GEMINI_API_KEY=
 # Alias Gemini opsional; dipakai jika GEMINI_API_KEY kosong.
 GOOGLE_API_KEY=
 
+# Model ID override opsional; kosong = gunakan default di variables/README.md.
+GROQ_MODEL=
+MISTRAL_MODEL=
+NVIDIA_MODEL=
+GEMINI_MODEL=
+
 # Telegram opsional
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_ALLOWED_USERS=

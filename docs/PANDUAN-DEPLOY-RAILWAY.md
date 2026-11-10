@@ -1,6 +1,6 @@
 # Panduan Deploy Hermes Railway — dari awal sampai berhasil
 
-Panduan ringkas untuk mencoba ketiga mode dari repository ini: **Dashboard**, **Railway Variables**, dan **Ubuntu Terminal**.
+Panduan ringkas untuk mencoba ketiga mode dari repository ini: **Dashboard**, **Railway Variables**, dan **Ubuntu Terminal**. Semua mode saat ini memakai Hermes Agent `v0.23.1`; pembaruan versi dilakukan bersamaan pada kedua Dockerfile. Lihat juga [panduan migrasi Railway IaC](RAILWAY-IAC-MIGRATION.md) sebelum 1 Desember 2026.
 
 **Arti tanda:** 🔴 wajib · 🟡 perhatian · 📋 siap salin · ✅ hasil yang benar · 🧰 perbaikan.
 
@@ -155,6 +155,12 @@ NVIDIA_API_KEY=
 GEMINI_API_KEY=
 GOOGLE_API_KEY=
 
+# Override model opsional (kosong = default)
+GROQ_MODEL=
+MISTRAL_MODEL=
+NVIDIA_MODEL=
+GEMINI_MODEL=
+
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_ALLOWED_USERS=
 
@@ -173,7 +179,7 @@ DISCORD_AUTO_THREAD=false
 NVIDIA_API_KEY=tempel_api_key_nvidia
 ~~~
 
-Urutan provider saat beberapa key terisi: **Groq → Mistral → NVIDIA → Gemini**. Jika `GEMINI_API_KEY` kosong, `GOOGLE_API_KEY` dapat dipakai sebagai alias.
+Urutan provider saat beberapa key terisi: **Groq → Mistral → NVIDIA → Gemini**. Jika `GEMINI_API_KEY` kosong, `GOOGLE_API_KEY` dapat dipakai sebagai alias. Model dapat diganti melalui `GROQ_MODEL`, `MISTRAL_MODEL`, `NVIDIA_MODEL`, atau `GEMINI_MODEL`; gunakan ID yang tersedia untuk provider dan akunmu. Nilai kosong berarti menggunakan preset bawaan.
 
 ### Variabel bot
 

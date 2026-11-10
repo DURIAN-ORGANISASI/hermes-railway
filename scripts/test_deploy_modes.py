@@ -108,6 +108,32 @@ def test_single_provider_configurations() -> None:
             require(len(list(home.iterdir())) == 1, "successful generation left temporary files")
 
 
+def test_model_override_is_applied() -> None:
+    with tempfile.TemporaryDirectory(prefix="hermes-model-override-test-") as temp:
+        home = Path(temp)
+        result = run_generator({
+            "GROQ_API_KEY": "groq-test-secret",
+            "GROQ_MODEL": "openai/gpt-oss-120b",
+        }, home)
+        require(result.returncode == 0, f"valid model override rejected: {result.stderr}")
+        text = (home / "config.yaml").read_text(encoding="utf-8")
+        require('default: "openai/gpt-oss-120b"' in text, "GROQ_MODEL override was not applied")
+        require("groq-test-secret" not in text, "provider secret leaked into config.yaml")
+
+
+def test_unsafe_model_id_is_rejected() -> None:
+    with tempfile.TemporaryDirectory(prefix="hermes-model-invalid-test-") as temp:
+        home = Path(temp)
+        result = run_generator({
+            "NVIDIA_API_KEY": "nvidia-test-secret",
+            "NVIDIA_MODEL": 'bad-model"quote',
+        }, home)
+        require(result.returncode != 0, "unsafe model ID must be rejected")
+        require("Invalid model ID" in result.stderr, "unsafe model ID failure must be explained")
+        require(not (home / "config.yaml").exists(), "unsafe model ID must not create config.yaml")
+        require(not any(home.iterdir()), "failed model validation must clean temporary files")
+
+
 def test_provider_priority_and_fallback_order() -> None:
     values = {
         "GEMINI_API_KEY": "gemini-test-secret",
@@ -140,6 +166,8 @@ def main() -> int:
     tests = [
         test_missing_and_whitespace_keys_do_not_overwrite_existing_config,
         test_single_provider_configurations,
+        test_model_override_is_applied,
+        test_unsafe_model_id_is_rejected,
         test_provider_priority_and_fallback_order,
     ]
     for test in tests:

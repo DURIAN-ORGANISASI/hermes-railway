@@ -28,9 +28,21 @@ fallback_count=0
 groq_active=no
 mistral_active=no
 
+validate_model_id() {
+  provider_name="$1"
+  model_id="$2"
+  case "$model_id" in
+    ''|*[!A-Za-z0-9._:/-]*)
+      echo "[hermes-railway] Invalid model ID for ${provider_name}. Use only letters, digits, dot, underscore, colon, slash, and hyphen." >&2
+      exit 1
+      ;;
+  esac
+}
+
 add_provider() {
   hermes_provider="$1"
   model_id="$2"
+  validate_model_id "$hermes_provider" "$model_id"
   if [ -z "$primary_provider" ]; then
     primary_provider="$hermes_provider"
     primary_model="$model_id"
@@ -42,16 +54,16 @@ add_provider() {
 
 if has_value "${GROQ_API_KEY:-}"; then
   groq_active=yes
-  add_provider custom:groq openai/gpt-oss-20b
+  add_provider custom:groq "${GROQ_MODEL:-openai/gpt-oss-20b}"
 fi
 
 if has_value "${MISTRAL_API_KEY:-}"; then
   mistral_active=yes
-  add_provider custom:mistral ministral-3b-latest
+  add_provider custom:mistral "${MISTRAL_MODEL:-ministral-3b-latest}"
 fi
 
 if has_value "${NVIDIA_API_KEY:-}"; then
-  add_provider nvidia nvidia/nemotron-3.5-super-vl-120b-a12b
+  add_provider nvidia "${NVIDIA_MODEL:-nvidia/nemotron-3.5-super-vl-120b-a12b}"
 fi
 
 gemini_key="${GEMINI_API_KEY:-}"
@@ -59,7 +71,7 @@ if ! has_value "$gemini_key"; then
   gemini_key="${GOOGLE_API_KEY:-}"
 fi
 if has_value "$gemini_key"; then
-  add_provider gemini gemini-3.8-flash
+  add_provider gemini "${GEMINI_MODEL:-gemini-3.8-flash}"
 fi
 
 if [ -z "$primary_provider" ]; then
